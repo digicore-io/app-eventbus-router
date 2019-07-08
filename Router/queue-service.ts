@@ -14,38 +14,23 @@ export class QueueService {
     }
 
     async processMessage(item: any) {
-
-        let appTest = await eventDao.getApplication("148b1bbd-9193-4c51-bd60-274909b7c1de");
-        console.log('AppTest', appTest)
+        
         let eventRequest: EventRequest = <EventRequest>item.body;
         console.log('Received event. Event ' + eventRequest.event + ' + companyId ' + eventRequest.companyId);
-
         let appEvents:any = await eventDao.getCompanyAppEvents(eventRequest.companyId, eventRequest.event);
-        console.log('test')
-        console.log('Events  ' + appEvents.length)
+        
+        
         //Company may have multiple apps registered for the same event
-        for (let appEvent of appEvents)
-            await this.handleAppEvent(eventRequest, appEvent);
+        for (let appEvent of appEvents){
+            console.log('GETTING APP')
+            const app:Application = <Application>await eventDao.getApplication(appEvent.applicationId)
+            this.routeRequestToApp(eventRequest, appEvent, app);
+        }
 
-    }
-
-    handleAppEvent(eventRequest: EventRequest, appEvent: CompanyAppEvent) {
-        console.log('AppEvent', appEvent)
-        const params = { TableName: 'eventbus-application', Key: { id: appEvent.applicationId } };
-        ddb.get(params), function (err, data) {
-            if (err)
-                console.log(err)
-
-            if (data) {
-                this.routeRequestToApp(eventRequest, appEvent, <Application>data)
-            } else
-                console.log('Received event for an application that does not exist. ' + JSON.stringify(appEvent))
-        };
     }
 
     routeRequestToApp(eventRequest: EventRequest, appEvent: CompanyAppEvent, app: Application) {
-        console.log('Routing event to ' + app.destinationType);
-
+        console.log('destination type, ', app.destinationType)
         switch (app.destinationType) {
             case DestinationType.SQS: {
                 this.sendSQS(eventRequest, appEvent, app);

@@ -11,40 +11,35 @@ export class EvendtDao {
             const params = {
                 TableName: 'eventbus-companyAppEvent',
                 IndexName: 'companyId-event-index',
-                Key: { 'companyId': companyId, ':event': event }
+                KeyConditionExpression: 'companyId = :companyId and event = :event',
+                ExpressionAttributeValues:{
+                    ":companyId": companyId,
+                    ":event":event        
+                }
             }
 
-            
-            docClient.get(params, function (err, data) {
-                console.log('Got data data')
+            docClient.query(params, function (err, data) {
                 if (err) {
-                    console.log('err')
                     console.log(err)
                     reject(err);
                 } else {
-                    console.log('data')
-                    console.log(data)
-                    resolve(data);
+                    resolve(data.Items);
                 }
             });
-
-            console.log('returning')
         });
     }
 
-    getApplication(id: string) {
+    getApplication(applicationId: string) {
         return new Promise(async function (resolve, reject) {
-            
-            const params = { TableName: 'eventbus-application3', Key: { id: id } };
-            docClient.get(params), function (err, data) {
-                console.log('application')
+            const params = { TableName: 'eventbus-application', Key: { "id": applicationId} };
+            docClient.get(params, function (err, data) {
                 if (err) {
+                    console.log(err)
                     reject(err);
                 } else {
-                    console.log('test appp')
-                    resolve(data);
+                    resolve(data.Item);
                 }
-            };
+            });
 
         });
     }
