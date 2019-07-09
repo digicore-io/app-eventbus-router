@@ -14,51 +14,66 @@ export class QueueService {
     }
 
     async processMessage(item: any) {
-        
-        let eventRequest: EventRequest = <EventRequest>item.body;
+        console.log('BODY', item.body)
+        let eventRequest: EventRequest = <EventRequest>JSON.parse(item.body);
+        console.log('Event Request', eventRequest)
+        if(!eventRequest.event || !eventRequest.companyId || !eventRequest.payload){
+            console.error('Event, Company ID or Payload was not specified')
+            return;
+        }
+
         console.log('Received event. Event ' + eventRequest.event + ' + companyId ' + eventRequest.companyId);
-        let appEvents:any = await eventDao.getCompanyAppEvents(eventRequest.companyId, eventRequest.event);
-        
-        
+        let appEvents: any = await eventDao.getCompanyAppEvents(eventRequest.companyId, eventRequest.event);
+
+
         //Company may have multiple apps registered for the same event
-        for (let appEvent of appEvents){
-            console.log('GETTING APP')
-            const app:Application = <Application>await eventDao.getApplication(appEvent.applicationId)
-            this.routeRequestToApp(eventRequest, appEvent, app);
+        for (let appEvent of appEvents) {
+            try {
+                const app: Application = <Application>await eventDao.getApplication(appEvent.applicationId)
+                await this.routeRequestToApp(eventRequest, appEvent, app);
+            } catch (error) {
+                console.log('CAUGHT ERROR');
+                console.log('Event Request', eventRequest)
+                await eventDao.logError(eventRequest, error);
+            }
         }
 
     }
 
-    routeRequestToApp(eventRequest: EventRequest, appEvent: CompanyAppEvent, app: Application) {
-        console.log('destination type, ', app.destinationType)
+    async routeRequestToApp(eventRequest: EventRequest, appEvent: CompanyAppEvent, app: Application) {
         switch (app.destinationType) {
             case DestinationType.SQS: {
-                this.sendSQS(eventRequest, appEvent, app);
+                eventRequest.response = await this.sendSQS(eventRequest, appEvent, app);
+                await eventDao.logEventRequest(eventRequest, app.id);
                 break;
             }
             default: {
-                console.log('Error. Unsupported destination. EventRequest ' + JSON.stringify(eventRequest) + ' Application: ' + JSON.stringify(app))
+                throw new Error('Error. Unsupported destination. EventRequest ' + JSON.stringify(eventRequest) + ' Application: ' + JSON.stringify(app))
             }
         }
 
     }
 
     async sendSQS(eventRequest: EventRequest, appEvent: CompanyAppEvent, app: Application) {
-        var params = {
-            MessageBody: JSON.stringify(eventRequest),
-            QueueUrl: app.destinationUrl,
-        };
+        return new Promise(async function (resolve, reject) {
+            var params = {
+                MessageBody: JSON.stringify(eventRequest),
+                QueueUrl: app.destinationUrl
+            };
 
-        var response = await sqs.sendMessage(params).promise();
-        var log: any = { TableName: 'eventbus-eventLog', Key: { id: uuidv4() } };
-        log.eventRequest = eventRequest;
+            console.log('Sending SQS to ' + params.QueueUrl)
+            sqs.sendMessage(params, function (err, data) {
+                console.log('err', err)
+                if (err) {
+                    console.log(err)
+                    reject(err)
+                } else {
 
-        ddb.save(log), function (err, data) {
-            if (err)
-                console.log(err)
-            else
-                console.log("Event has been logged");
-        };
+                    console.log(data)
+                    resolve(data);
+                }
+            });
+        });
     }
 }
 
@@ -67,6 +82,7 @@ export class EventRequest {
     event: string;
     applicationId: string;
     payload: any;
+    response: any;
 }
 
 export class CompanyAppEvent {
@@ -84,6 +100,6 @@ export class Application {
     destinationArn: string;
 }
 
-export enum DestinationType {
-    SQS
+export const enum DestinationType {
+    SQS = 'SQS',
 }

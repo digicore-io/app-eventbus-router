@@ -1,5 +1,7 @@
-var AWS = require("aws-sdk");
+import { EventRequest } from "../queue-service";
 
+var AWS = require("aws-sdk");
+const uuidv4 = require('uuid/v4');
 
 AWS.config.update({ region: "us-west-2" });
 var docClient = new AWS.DynamoDB.DocumentClient();
@@ -44,4 +46,44 @@ export class EvendtDao {
         });
     }
 
+    logEventRequest(eventRequest: EventRequest, applicationId:string) {
+        return new Promise(async function (resolve, reject) {
+            var log: any = { TableName: 'eventbus-eventLog', 
+                Item:{
+                    id: uuidv4(),
+                    applicationId: applicationId,
+                    eventRequest : JSON.stringify(eventRequest),
+                    status : 'OK'
+                }
+            };
+            
+            docClient.put(log, function (err, data) {
+                if (err)
+                    reject(err);
+                else
+                    resolve(data);
+            });
+        });
+    }
+
+    logError(eventRequest: EventRequest, error: any) {
+        return new Promise(async function (resolve, reject) {
+            var log: any = { TableName: 'eventbus-eventLog', 
+                Item:{
+                    id: uuidv4(),
+                    eventRequest : JSON.stringify(eventRequest),
+                    error: JSON.stringify(error),
+                    status : 'ERROR'
+                }
+            };
+            
+            docClient.put(log, function (err, data) {
+                
+                if (err)
+                    reject(err);
+                else
+                    resolve(error);
+            });
+        });
+    }
 }
