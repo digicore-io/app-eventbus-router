@@ -56,6 +56,8 @@ export class QueueService {
 
     async sendSQS(eventRequest: EventRequest, appEvent: CompanyAppEvent, app: Application) {
         return new Promise(async function (resolve, reject) {
+            eventRequest.companyAppEventId = appEvent.id;
+            
             var params = {
                 MessageBody: JSON.stringify(eventRequest),
                 QueueUrl: app.destinationUrl
@@ -83,6 +85,7 @@ export class EventRequest {
     applicationId: string;
     payload: any;
     response: any;
+    companyAppEventId:string;
 }
 
 export class CompanyAppEvent {
