@@ -1,0 +1,55 @@
+{
+	"headers": {
+		"User-Agent": "PostmanRuntime/7.13.0",
+		"Accept": "*/*",
+		"Cache-Control": "no-cache",
+		"Postman-Token": "fc267caf-0fd3-43cc-b1db-e7435bec7e5e",
+		"Host": "localhost:3000",
+		"accept-encoding": "gzip, deflate",
+		"Connection": "keep-alive"
+	},
+	"multiValueHeaders": {
+		"User-Agent": ["PostmanRuntime/7.13.0"],
+		"Accept": ["*/*"],
+		"Cache-Control": ["no-cache"],
+		"Postman-Token": ["fc267caf-0fd3-43cc-b1db-e7435bec7e5e"],
+		"Host": ["localhost:3000"],
+		"accept-encoding": ["gzip, deflate"],
+		"Connection": ["keep-alive"]
+	},
+	"path": "/group-code",
+	"pathParameters": null,
+	"requestContext": {
+		"accountId": "offlineContext_accountId",
+		"resourceId": "offlineContext_resourceId",
+		"apiId": "offlineContext_apiId",
+		"stage": "dev",
+		"requestId": "offlineContext_requestId_5339388016522089",
+		"identity": {
+			"cognitoIdentityPoolId": "offlineContext_cognitoIdentityPoolId",
+			"accountId": "offlineContext_accountId",
+			"cognitoIdentityId": "offlineContext_cognitoIdentityId",
+			"caller": "offlineContext_caller",
+			"apiKey": "offlineContext_apiKey",
+			"sourceIp": "127.0.0.1",
+			"cognitoAuthenticationType": "offlineContext_cognitoAuthenticationType",
+			"cognitoAuthenticationProvider": "offlineContext_cognitoAuthenticationProvider",
+			"userArn": "offlineContext_userArn",
+			"userAgent": "PostmanRuntime/7.13.0",
+			"user": "offlineContext_user"
+		},
+		"authorizer": {
+			"principalId": "offlineContext_authorizer_principalId"
+		},
+		"protocol": "HTTP/1.1",
+		"resourcePath": "/group-code",
+		"httpMethod": "GET"
+	},
+	"resource": "/group-code",
+	"httpMethod": "GET",
+	"queryStringParameters": null,
+	"multiValueQueryStringParameters": null,
+	"stageVariables": null,
+	"body": null,
+	"isOffline": true
+}
