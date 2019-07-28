@@ -1,0 +1,6 @@
+{
+"id":{"S":"d21ee17b-c1cb-46fe-9ebb-182e27bd7075"},
+"name":{"S":"eBay Connector"},
+"destinationType":{"S":"SQS"},
+"destinationUrl":{"S":"PENDING"}
+}
