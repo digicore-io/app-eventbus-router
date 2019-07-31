@@ -1,14 +1,13 @@
 import {Router} from './router';
 import {Error, Response} from './classes';
-import { isRegExp } from 'util';
+
 
 export const handle = async (event, context:any) => {
   let router = new Router();
   
   try{
     let result = await router.handleRoute(event);
-
-    console.log('result', result)
+    
     return getResponse(new Response(200, true, result, event));
   }catch(err){
     if(err instanceof Error == false)

@@ -28,7 +28,7 @@ export class Server{
   constructor(api:string, timestamp:number, event:any){
     this.api = api;
     this.timestamp = timestamp;
-    this.endpoint = event.resource;
+    this.endpoint = event.path;
   }
 }
 
