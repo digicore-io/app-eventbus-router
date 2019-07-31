@@ -3,7 +3,7 @@
         {
             "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
             "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
-            "body":"{\"companyId\":\"148b1bbd-9193-4c51-bd60-274909b7c1de\",\"event\":\"CUSTOMER_SIGNUP\",\"payload\":{\"customer\":{\"emailAddress\":\"james@redrox.com.au\"}}}",
+            "body":"{\"companyId\":\"148b1bbd-9193-4c51-bd60-274909b7c1de\",\"event\":\"CUSTOMER_SIGNUP\",\"payload\":{\"customer\":{\"emailAddress\":\"james+PTIN1@redrox.com.au\"}},\"companyAppEventId\":\"973a17f8-2992-4f3d-a485-a7cbf2825319\"}",
             "attributes": {
                 "ApproximateReceiveCount": "1",
                 "SentTimestamp": "1545082649183",

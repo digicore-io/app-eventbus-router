@@ -6,9 +6,12 @@ import { EvendtDao } from './dao/event-dao';
 var sharpSpringService = new SharpSpringService();
 
 
-export const processor = async (event, _context) => {
-  console.log('EVENT', event);
+export const App = async (event, _context) => {
+  for (const item of event.Records)
+    await sharpSpringService.processMessage(item);
+
+ 
   
-  await sharpSpringService.processMessages(event);
+  
   
 }

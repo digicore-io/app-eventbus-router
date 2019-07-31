@@ -1,4 +1,4 @@
-import { EventRequest } from "../sharpspring-service";
+import { EventRequest, CompanyAppEvent } from "../sharpspring-service";
 
 var AWS = require("aws-sdk");
 const uuidv4 = require('uuid/v4');
@@ -7,25 +7,17 @@ AWS.config.update({ region: "us-west-2" });
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 export class EvendtDao {
-    getCompanyAppEvents(companyId: string, event:string) {
+    getCompanyAppEvent(companyAppEventId:string) {
         return new Promise(async function (resolve, reject) {
             
-            const params = {
-                TableName: 'eventbus-companyAppEvent',
-                IndexName: 'companyId-event-index',
-                KeyConditionExpression: 'companyId = :companyId and event = :event',
-                ExpressionAttributeValues:{
-                    ":companyId": companyId,
-                    ":event":event        
-                }
-            }
+            const params = {TableName: 'eventbus-companyAppEvent', Key: { "id": companyAppEventId}};
 
-            docClient.query(params, function (err, data) {
+            docClient.get(params, function (err, data) {
                 if (err) {
                     console.log(err)
                     reject(err);
                 } else {
-                    resolve(data.Items);
+                    resolve(data.Item);
                 }
             });
         });

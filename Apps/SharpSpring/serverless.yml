@@ -1,5 +1,5 @@
 service:
-  name: EventBus-App-SharpSpring
+  name: EventBus-App
 #app: your-app-name
 #tenant: your-tenant-name
 
@@ -30,8 +30,9 @@ provider:
   role: ${self:custom.role.${self:provider.stage}}
 
 functions:
-  processor:
-    handler: handler.router
+  App:
+    handler: handler.App
+    name: EventBus-App-SharpSpring
     timeout: 30
     events:
       - sqs: ${self:custom.sqs.${self:provider.stage}}
