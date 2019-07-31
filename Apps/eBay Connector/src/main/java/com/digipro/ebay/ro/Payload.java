@@ -146,6 +146,15 @@ public class Payload {
 	private String ebayCategoryId;
 	private boolean ebayPublish;
 	private int ebayConditionId;
+	private String ebayProductLocation;
+
+	public String getEbayProductLocation() {
+		return ebayProductLocation;
+	}
+
+	public void setEbayProductLocation(String ebayProductLocation) {
+		this.ebayProductLocation = ebayProductLocation;
+	}
 
 	public boolean isEbayPublish() {
 		return ebayPublish;

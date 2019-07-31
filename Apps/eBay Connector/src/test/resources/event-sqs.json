@@ -48,6 +48,7 @@
 				"images":["https://ik.imagekit.io/yi7qlqdvr/tr:h-744,w-600//a/p/app007600-1.jpg"],
 				
 				"ebayPublish":true,
+				"ebayProductLocation":"Pensacola",
 				"ebayPaymentPolicyId":"6065700000",
 				"ebayFulfillmentPolicyId":"6065706000",
 				"ebayReturnPolicyId":"6065708000",

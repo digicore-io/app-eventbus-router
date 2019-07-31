@@ -60,11 +60,9 @@ public class EbayService {
 		addCall.addItem();
 		String itemId = addCall.getReturnedItemID();
 
-		System.err.println("Added Item " + itemId);
-
-		service.log(body,
-				String.format("Product Created on eBay. Company ID %s Product ID %s eBay Item ID %s ", body.getCompanyId(), body.getPayload().getId(), itemId) + "\n\n" + GsonUtil.gson.toJson(addCall.getResponseObject()),
-				LogStatus.OK);
+		String log = String.format("Product Created on eBay. Company ID %s Product ID %s eBay Item ID %s ", body.getCompanyId(), body.getPayload().getId(), itemId);
+		System.err.println(log);
+		service.log(body, log + "\n\n" + GsonUtil.gson.toJson(addCall.getResponseObject()), LogStatus.OK);
 
 		return itemId;
 
@@ -84,9 +82,9 @@ public class EbayService {
 		call.reviseItem();
 
 		CoreService service = new CoreService();
-		service.log(body,
-				String.format("Product Created on eBay. Company ID %s Product ID %s eBay Item ID %s ", body.getCompanyId(), body.getPayload().getId(), itemId) + "\n\n" + GsonUtil.gson.toJson(call.getResponseObject()),
-				LogStatus.OK);
+		String log = String.format("Product Updated on eBay. Company ID %s Product ID %s eBay Item ID %s ", body.getCompanyId(), body.getPayload().getId(), itemId);
+		System.err.println(log);
+		service.log(body, log + "\n\n" + GsonUtil.gson.toJson(call.getResponseObject()), LogStatus.OK);
 	}
 
 	private static ItemType buildItem(Payload product) throws IOException {
@@ -103,7 +101,7 @@ public class EbayService {
 		item.setStartPrice(amount);
 		item.setListingDuration(ListingDurationCodeType.GTC.value());
 
-		item.setLocation("Pensacola"); //TODO Add this to companyApp OR do we need to handle multiple??? 
+		item.setLocation(product.getEbayProductLocation());
 		item.setCountry(CountryCodeType.US);
 		item.setQuantity(product.getQty());
 		item.setConditionID(product.getEbayConditionId());
