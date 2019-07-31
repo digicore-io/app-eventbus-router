@@ -1,0 +1,70 @@
+{
+    "Records": [
+        {
+            "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
+            "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+            "body":{"companyId":"5555","event":"ECOM_PRODUCT_UPDATED","applicationId":"d21ee17b-c1cb-46fe-9ebb-182e27bd7075","payload":
+            	{
+            	"id":"12312431345111",
+				"familyId":"",
+				"sku":"SKU857345111",
+				"name":"Test Product 5111",
+				"description":"This is a test product from the API - Long description",
+				"shortDescription":"This is a test product from the API - Long description",
+				"slug":"",
+				"cost":"",
+				"price":"",
+				"purchasePrice":"50.99",
+				"taxRateId":"",
+				"locID":"",
+				"metaTitle":"",
+				"metaDescription":"",
+				"metaKeyword":"",
+				"tags":"",
+				"attachType":"",
+				"attachment":"",
+				"createdAt":"",
+				"albumId":"",
+				"sendEventTicket":"",
+				"startDate":"",
+				"startTime":"",
+				"endDate":"",
+				"endTime":"",
+				"timeZone":"",
+				"postEventId":"",
+				"showSharing":"",
+				"qty":"7",
+				"minPurchaseQty":"1",
+				"maxPurchaseQty":"2",
+				"cartBtnLabel":"",
+				"featured":0,
+				"recurring":"",
+				"recurringFrequency":"",
+				"recurringStartDay":"",
+				"status":1,
+				"enableFreeShipping":1,
+				"visibleWeb":1,
+				"visibleVirtual":1,
+				"images":["https://ik.imagekit.io/yi7qlqdvr/tr:h-744,w-600//a/p/app007600-1.jpg"],
+				
+				"ebayPublish":true,
+				"ebayPaymentPolicyId":"6065700000",
+				"ebayFulfillmentPolicyId":"6065706000",
+				"ebayReturnPolicyId":"6065708000",
+				"ebayCategoryId":"162140"
+            	},
+            "companyAppEventId":"78f9a93e-953a-423b-b45e-9e6679fe0de1"},
+            "attributes": {
+                "ApproximateReceiveCount": "1",
+                "SentTimestamp": "1545082649183",
+                "SenderId": "AIDAIENQZJOLO23YVJ4VO",
+                "ApproximateFirstReceiveTimestamp": "1545082649185"
+            },
+            "messageAttributes": {},
+            "md5OfBody": "098f6bcd4621d373cade4e832627b4f6",
+            "eventSource": "aws:sqs",
+            "eventSourceARN": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+            "awsRegion": "us-east-2"
+        }
+    ]
+}
