@@ -35,7 +35,7 @@ provider:
     serverSideEncryption: AES256
   role: arn:aws:iam::951585821496:role/LambdaEventBusRouter
   #role: ${self:custom.role.${self:provider.stage}}
-  # iamRoleStatements:
+  iamRoleStatements:
   #   - Effect: Allow
   #     Action:
   #       - dynamodb:*
@@ -56,6 +56,7 @@ provider:
 functions:
   router:
     handler: handler.router
+    name: EventBus-Router
     timeout: 30
     events:
       - sqs: ${self:custom.sqs.${self:provider.stage}}
