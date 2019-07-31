@@ -56,17 +56,17 @@ functions:
     handler: handler.handle
     events:
       - http:
-          path: apps/{appId}/companies/{companyId}/entities/{entityId}
+          path: applications/{applicationId}/companies/{companyId}/entities/{entityId}
           method: get
           cors: true
           private: true  
       - http:
           method: put
-          path: apps/{appId}/companies/{companyId}/entities/{entityId}
+          path: applications/{applicationId}/companies/{companyId}/entities/{entityId}
           cors: true
           private: true
       - http:
           method: post
-          path: apps
+          path: applications
           cors: true
           private: true

@@ -7,10 +7,10 @@ const AWS = require('aws-sdk');
 const docClient = new AWS.DynamoDB.DocumentClient({region: 'us-west-2'});
 
 export class AppEntityDao {
-    saveAppEntity(appId: string, companyId: string, entityId: string, appEntity:AppEntity) {
+    saveAppEntity(applicationId: string, companyId: string, entityId: string, appEntity:AppEntity) {
       return new Promise(async function(resolve, reject) {
         try {
-          appEntity.appId = appId;
+          appEntity.applicationId = applicationId;
           appEntity.companyAndEntityId = companyId + '-' + entityId;
           let params = new Params();
           params.TableName = "eventbus-appEntity";
@@ -22,7 +22,7 @@ export class AppEntityDao {
                 reject(err);
                 throw 'Error: ' + JSON.stringify(err, null, 2);
             }else{
-                resolve();
+                resolve(appEntity);
             }
           });
       } catch (err) {
@@ -32,12 +32,12 @@ export class AppEntityDao {
     });
     }
 
-    getAppEntity(appId, companyId: string, entityId:string) {
+    getAppEntity(applicationId, companyId: string, entityId:string) {
       return new Promise(async function(resolve, reject) {
           try {
             let params = new Params();
             params.TableName = "eventbus-appEntity";
-            params.Key = {"appId":appId, "companyAndEntityId":companyId + '-' + entityId}
+            params.Key = {"applicationId":applicationId, "companyAndEntityId":companyId + '-' + entityId}
             
                         
             docClient.get(params, function(err,data){

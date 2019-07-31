@@ -14,7 +14,11 @@ export class Response{
   payload:any;
   constructor(status:number, success:boolean, payload:any, event:any){
     this.server = new Server("api-digitrack", new Date().getTime(), event);
-    this.status = status;
+    if(success && !payload)
+      this.status = 204; //No content
+    else
+      this.status = status;
+      
     this.success = success;
     this.payload = payload;
   }

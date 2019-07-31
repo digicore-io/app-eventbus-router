@@ -1,5 +1,5 @@
 export interface AppEntity{
-    appId:string;
+    applicationId:string;
     companyAndEntityId:string;
     data:any;
 }

@@ -7,9 +7,9 @@ const appEntityDao = new AppEntityDao();
 
 export class AppEntityService extends BaseService {
 
-    async saveAppEntity(appId: string, companyId: string, entityId: string,appEntity: AppEntity) {
-        if (!appId)
-            throw new Error(400, "Parameter entityId is required");
+    async saveAppEntity(applicationId: string, companyId: string, entityId: string,appEntity: AppEntity) {
+        if (!applicationId)
+            throw new Error(400, "Parameter applicationId is required");
 
         if (!companyId)
             throw new Error(400, "Parameter companyId is required");
@@ -17,16 +17,16 @@ export class AppEntityService extends BaseService {
         if (!entityId)
             throw new Error(400, "Parameter entityId is required");
 
-        await appEntityDao.saveAppEntity(appId, companyId, entityId, appEntity)
+        return await appEntityDao.saveAppEntity(applicationId, companyId, entityId, appEntity)
             .catch(function (error) {
                 throw error;
             });
     }
 
-    async getAppEntity(appId: string, companyId: string, entityId: string) {
+    async getAppEntity(applicationId: string, companyId: string, entityId: string) {
 
-        if(!appId)
-            throw new Error(400, "Parameter appId is required");
+        if(!applicationId)
+            throw new Error(400, "Parameter applicationId is required");
 
         if (!companyId)
             throw new Error(400, "Parameter companyId is required");
@@ -34,7 +34,7 @@ export class AppEntityService extends BaseService {
         if (!entityId)
             throw new Error(400, "Parameter entityId is required");
 
-        let appEntity: AppEntity = <AppEntity>await appEntityDao.getAppEntity(appId, companyId, entityId)
+        let appEntity: AppEntity = <AppEntity>await appEntityDao.getAppEntity(applicationId, companyId, entityId)
             .catch(function (error) {
                 console.log(error)
                 throw error;
