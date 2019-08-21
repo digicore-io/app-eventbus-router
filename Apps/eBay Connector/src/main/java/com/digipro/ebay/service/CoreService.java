@@ -3,18 +3,23 @@ package com.digipro.ebay.service;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.http.HttpStatus;
 
+import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
+import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClientBuilder;
+import com.amazonaws.services.simplesystemsmanagement.model.GetParameterRequest;
+import com.amazonaws.services.simplesystemsmanagement.model.GetParameterResult;
+import com.amazonaws.services.simplesystemsmanagement.model.GetParametersRequest;
+import com.amazonaws.services.simplesystemsmanagement.model.Parameter;
+import com.amazonaws.services.simplesystemsmanagement.model.ParameterNotFoundException;
 import com.digipro.ebay.dao.EventLogDao;
 import com.digipro.ebay.model.EventLog;
 import com.digipro.ebay.ro.AppEntity;
-import com.digipro.ebay.ro.Body;
-import com.digipro.ebay.ro.Record;
+import com.digipro.ebay.ro.DpmPayload;
+import com.digipro.ebay.ro.Event;
 import com.digipro.ebay.ro.api.EntityApiResponse;
 import com.ebay.sdk.ApiException;
 import com.github.kevinsawicki.http.HttpRequest;
@@ -25,11 +30,19 @@ import com.github.kevinsawicki.http.HttpRequest;
  *
  */
 public class CoreService {
-	//TODO: Replace this to work with stage param (defaulting to local)
-	private static final String ENV = "local";
+	private static String ENV = "local";
 	private Properties props;
+	private static String apiKey;
 
 	public CoreService() {
+		if (System.getenv("STAGE") != null)
+			ENV = System.getenv("STAGE");
+
+		System.err.println("Environment " + ENV);
+
+		if (apiKey == null)
+			apiKey = ParamUtils.getParameter("api-key-main");
+
 		if (props == null) {
 			try {
 				props = new Properties();
@@ -40,56 +53,82 @@ public class CoreService {
 		}
 	}
 
-	public void processMessage(Record record) {
-		//Check if we've processed this before
-		String appId = record.getBody().getApplicationId();
-		String companyId = record.getBody().getCompanyId();
-		String entityId = record.getBody().getPayload().getId();
+	private String getApiKey() {
+		try {
+			AWSSimpleSystemsManagement client = AWSSimpleSystemsManagementClientBuilder.defaultClient();
+			GetParameterRequest pr = new GetParameterRequest();
+			pr.withName("api-key-main").setWithDecryption(true);
+			GetParameterResult result = client.getParameter(pr);
+			Parameter param = result.getParameter();
 
+			return param.getValue();
+		} catch (ParameterNotFoundException e) {
+			throw new RuntimeException("Couldn't get the API key from SSM");
+		}
+	}
+
+	public void processMessage(Event event) {
+		if (event.getEvent().equals(com.digipro.ebay.service.Event.EBAY_PRODUCT_CHANGE.name())) {
+			EbayToDpmService service = new EbayToDpmService(props);
+			service.processEbayProductChange(event);
+		} else
+			processDpmMessage(event);
+	}
+
+	public void processDpmMessage(Event event) {
+		String apiKey = getApiKey();
+		System.err.println("Processing Message");
+
+		DpmPayload payload = GsonUtil.gson.fromJson((String) event.getPayload(), DpmPayload.class);
+		String appId = event.getApplicationId();
+		String companyId = event.getCompanyId();
+		String entityId = payload.getId();
+
+		//Check if we've processed this before
 		String endpoint = String.format("applications/%s/companies/%s/entities/%s", appId, companyId, entityId);
-		HttpRequest request = HttpRequest.get(props.getProperty("APP_MANAGER_URL") + endpoint);
+		HttpRequest request = HttpRequest.get(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey);
 		int code = request.code();
 
 		try {
-			EbayService service = new EbayService(props);
+			DpmToEbayService service = new DpmToEbayService(props);
 			if (code == HttpStatus.SC_NOT_FOUND) {
-				String itemId = service.createProductListing(record.getBody());
+				String itemId = service.createProductListing(event, payload);
 
 				if (itemId != null) { //Product not created due to status=0
 
 					AppEntity item = new AppEntity();
-					item.setCompanyId(record.getBody().getCompanyId());
-					item.setEntityId(record.getBody().getPayload().getId());
+					item.setCompanyId(event.getCompanyId());
+					item.setEntityId(payload.getId());
 					item.getData().setItemId(itemId);
 
-					String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).send(GsonUtil.gson.toJson(item)).code();
+					String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).send(GsonUtil.gson.toJson(item)).header("x-api-key", apiKey).code();
 
 					if (!responseCode.startsWith("2"))
-						throw new Exception(
-								String.format("Could not save response from eBay. Company ID %s - Product ID %s - Ebay Item ID %s", record.getBody().getCompanyId(), record.getBody().getPayload().getId(), itemId));
+						throw new Exception(String.format("Could not save response from eBay. Company ID %s - Product ID %s - Ebay Item ID %s", event.getCompanyId(), payload.getId(), itemId));
 				}
 
-			} else {
+			} else if (code == HttpStatus.SC_OK) {
 				EntityApiResponse response = GsonUtil.gson.fromJson(request.body(), EntityApiResponse.class);
-				service.updateProductListing(response.getPayload().getData().getItemId(), record.getBody());
-			}
+				service.updateProductListing(response.getPayload().getData().getItemId(), event, payload);
+			} else
+				throw new Exception("Unexpected response code from Api App Manager: " + code);
 
 		} catch (ApiException ae) {
 			//TODO: Problem with the listing. Send notification to App Slack Channel
 
 			System.err.println(ae.getMessage());
-			log(record.getBody(), ae.getMessage(), LogStatus.ERROR);
+			log(event, ae.getMessage(), LogStatus.ERROR);
 			throw new RuntimeException(ae);
 		} catch (Exception e) {
 			//TODO:  Send notification to EventBus Slack Channel
 
 			e.printStackTrace();
-			logError(record.getBody(), e);
+			logError(event, e);
 			throw new RuntimeException(e);
 		}
 	}
 
-	public void log(Body appEvent, Object info, LogStatus status) {
+	public void log(Event appEvent, Object info, LogStatus status) {
 		EventLog log = new EventLog();
 		log.setId(UUID.randomUUID().toString());
 		log.setApplicationId(appEvent.getApplicationId());
@@ -106,7 +145,7 @@ public class CoreService {
 		dao.save(log);
 	}
 
-	public void logError(Body appEvent, Exception e) {
+	public void logError(Event appEvent, Exception e) {
 		EventLog log = new EventLog();
 		log.setId(UUID.randomUUID().toString());
 		log.setApplicationId(appEvent.getApplicationId());

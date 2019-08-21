@@ -1,17 +1,5 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
 
-service: EbayConnector
+service: EventBus-App-EbayConnector
 #app: your-app-name
 #tenant: your-tenant-name
 
@@ -19,41 +7,45 @@ service: EbayConnector
 # Check out our docs for more details
 # frameworkVersion: "=X.X.X"
 
+custom:
+  sqs:
+    dev: arn:aws:sqs:us-west-2:951585821496:EventBusApp-eBayConnector
+    prod: PENDING
+  deploymentBucket:
+    dev: dpm-lambda-deployment-dev
+    prod: dpm-lambda-deployment
+  role:
+    dev: arn:aws:iam::951585821496:role/Lambda
+    prod: arn:aws:iam::211602931179:role/Lambda
+  ebay-url:
+    dev: https://api.sandbox.ebay.com/wsapi
+    prod: https://api.ebay.com/wsapi
+      
 provider:
   name: aws
   runtime: java8
-
-# you can overwrite defaults here
-#  stage: dev
-#  region: us-east-1
-
-# you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
-
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
-# you can add packaging information here
+  region: us-west-2
+  stage: ${opt:stage,'dev'}
+  deploymentBucket:
+    name: ${self:custom.deploymentBucket.${self:provider.stage}}
+    serverSideEncryption: AES256
+  role: ${self:custom.role.${self:provider.stage}}
+  
 package:
   artifact: target/ebay-connector-dev.jar
 
 functions:
   handle:
     handler: com.serverless.Handler
+    name: EventBus-App-eBayConnector
+    timeout: 60
+    memorySize: 1024
+    environment:
+      STAGE: ${self:provider.stage}
+      EBAY_API_URL: ${self:custom.ebay-url.${self:provider.stage}}
+    events:
+      - sqs: ${self:custom.sqs.${self:provider.stage}}
+      
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details

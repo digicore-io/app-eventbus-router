@@ -4,16 +4,22 @@ import {Error, Response} from './classes';
 
 export const handle = async (event, context:any) => {
   let router = new Router();
-  
+  let startTime = new Date().getTime();
+
   try{
+    
     let result = await router.handleRoute(event);
     
-    return getResponse(new Response(200, true, result, event));
+    let endTime = new Date().getTime();
+
+    return getResponse(new Response(200, true, result, event, endTime-startTime));
   }catch(err){
+    let endTime = new Date().getTime();
+    
     if(err instanceof Error == false)
-      return getResponse(new Response(500, false, "" + err, null))    
+      return getResponse(new Response(500, false, "" + err, null, endTime-startTime))    
     else
-      return getResponse(new Response(err.status, false, err.message, event));
+      return getResponse(new Response(err.status, false, err.message, event, endTime-startTime));
   }
 };
 

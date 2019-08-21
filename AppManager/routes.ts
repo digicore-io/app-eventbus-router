@@ -2,8 +2,9 @@ import { AppEntityService } from './service/app-entity-service';
 import { Location, LocationRequest, Error } from './classes'
 import { Route } from './classes'
 import { AppEntity } from './interfaces';
+import { CompanyAppService } from './service/company-app-service';
 const appEntityService = new AppEntityService();
-
+const companyAppService = new CompanyAppService();
 
 export class Routes {
     public async handleGetRequest(event: any, route: Route) {
@@ -11,6 +12,9 @@ export class Routes {
         switch (route.resource) {
             case '/applications/{applicationId}/companies/{companyId}/entities/{entityId}': {
                 return appEntityService.getAppEntity(route.pathParameters.applicationId, route.pathParameters.companyId, route.pathParameters.entityId);
+            }
+            case '/companies/{companyId}/applications': {
+                return companyAppService.getApplications(route.pathParameters.companyId, route.queryParameters.event);
             }
             default: {
                 console.log('Unknown Route Resource in GET request', JSON.stringify(route))
@@ -38,6 +42,10 @@ export class Routes {
             case '/applications/{applicationId}/companies/{companyId}/entities/{entityId}': {
                 await appEntityService.saveAppEntity(route.pathParameters.applicationId, route.pathParameters.companyId,
                     route.pathParameters.entityId, <AppEntity>jsonObject);
+                break;
+            }
+            case '/applications/{applicationId}/companies/{companyId}': {
+                await companyAppService.saveApplicationCompany(route.pathParameters.applicationId, route.pathParameters.companyId, jsonObject);
                 break;
             }
             default: {

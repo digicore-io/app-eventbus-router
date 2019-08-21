@@ -14,7 +14,7 @@ public class Record {
     private String receiptHandle;
     @SerializedName("body")
     @Expose
-    private Body body;
+    private Event body;
     @SerializedName("attributes")
     @Expose
     private Attributes attributes;
@@ -50,11 +50,11 @@ public class Record {
         this.receiptHandle = receiptHandle;
     }
 
-    public Body getBody() {
+    public Event getBody() {
         return body;
     }
 
-    public void setBody(Body body) {
+    public void setBody(Event body) {
         this.body = body;
     }
 

@@ -12,15 +12,17 @@ export class Response{
   status:number;
   success:boolean;
   payload:any;
-  constructor(status:number, success:boolean, payload:any, event:any){
-    this.server = new Server("api-digitrack", new Date().getTime(), event);
+  
+  constructor(status:number, success:boolean, payload:any, event:any, executeTime:number){
+    this.server = new Server("", new Date().getTime(), event,executeTime);
     if(success && !payload)
       this.status = 204; //No content
     else
       this.status = status;
-      
+    
     this.success = success;
     this.payload = payload;
+
   }
 }
 
@@ -29,10 +31,13 @@ export class Server{
   timestamp:number;
   endpoint:string;
   environment:string;
-  constructor(api:string, timestamp:number, event:any){
+  executeMs:number;
+
+  constructor(api:string, timestamp:number, event:any, executeTime:number){
     this.api = api;
     this.timestamp = timestamp;
     this.endpoint = event.path;
+    this.executeMs = executeTime;
   }
 }
 

@@ -5,6 +5,7 @@ plugins:
   - serverless-webpack
   - serverless-offline
   - serverless-domain-manager
+  - serverless-api-compression
 
 custom:
   webpack:
@@ -26,7 +27,7 @@ custom:
       prod: 'api.digicore.io' 
   customDomain:  
       domainName: ${self:custom.domain.domainName.${self:provider.stage}} 
-      basePath: 'digitrack'
+      basePath: 'app-api'
       stage: ${self:provider.stage}
       createRoute53Record: true
       certificateName: '*.digicore.io'
@@ -35,17 +36,17 @@ custom:
 provider:
   name: aws
   runtime: nodejs10.x
-  stage: ${opt:stage,'prod'}
+  stage: ${opt:stage,'dev'}
   profile: ${self:custom.profile.${self:provider.stage}} 
   region: us-west-2
   apiKeys:
     - api-key
-  stackName: api-digitrack
+  stackName: app-api
   role: ${self:custom.role.${self:provider.stage}}
   deploymentBucket:
     name: ${self:custom.deploymentBucket.${self:provider.stage}}
     serverSideEncryption: AES256
-  apiName: api.app-registry
+  apiName: api.app-manager
   environment:
     SERVICE_NAME: ${self:service}
 
@@ -66,7 +67,13 @@ functions:
           cors: true
           private: true
       - http:
-          method: post
-          path: applications
+          method: put
+          path: applications/{applicationId}/companies/{companyId}
           cors: true
           private: true
+      - http:
+          path: companies/{companyId}/applications
+          method: get
+          cors: true
+          private: true
+

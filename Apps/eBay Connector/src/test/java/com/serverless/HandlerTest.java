@@ -1,16 +1,16 @@
 package com.serverless;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import com.amazonaws.util.IOUtils;
 import com.digipro.ebay.service.GsonUtil;
-import com.google.gson.JsonObject;
 
 /**
  * TODO: Ensure we have 100% test coverage and cleanup 
@@ -23,19 +23,44 @@ class HandlerTest {
 	}
 
 	@Test
-	void testProcessSQSNewProduct() {
+	void testProcessSQSNewProductFromDPM() {
 		try {
 			Handler handler = new Handler();
-			String json = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("event-sqs.json"));
-			JsonObject object = GsonUtil.gson.fromJson(json, JsonObject.class);
-			//			System.err.println(object.get("Records"));
-			Map<String, Object> input = new HashMap<String, Object>();
-			input.put("Records", object.get("Records").getAsJsonArray().toString());
-			handler.handleRequest(input, null);
+			String json = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("event-sqs-from-dpm.json"));
+			SQSEvent event = new SQSEvent();
+			event.setRecords(new ArrayList<SQSEvent.SQSMessage>());
+			SQSMessage msg = new SQSMessage();
+			msg.setBody(json);
+			event.getRecords().add(msg);
+
+			handler.handleRequest(event, null);
 
 		} catch (Exception e) {
 			fail(e);
 		}
 	}
 
+	@Test
+	void testProcessSQSNewProductFromEbay() {
+		try {
+			Handler handler = new Handler();
+			String json = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("event-sqs-from-ebay.json"));
+			Event eventRo = GsonUtil.gson.fromJson(json, Event.class);
+			eventRo.setPayload(IOUtils.toString(getClass().getClassLoader().getResourceAsStream("product-listed-ebay.xml")));
+
+			json = GsonUtil.gson.toJson(eventRo);
+
+			SQSEvent event = new SQSEvent();
+			event.setRecords(new ArrayList<SQSEvent.SQSMessage>());
+			SQSMessage msg = new SQSMessage();
+			msg.setBody(json);
+			event.getRecords().add(msg);
+
+			handler.handleRequest(event, null);
+
+		} catch (Exception e) {
+			fail(e);
+			e.printStackTrace();
+		}
+	}
 }

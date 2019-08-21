@@ -7,7 +7,8 @@ const AWS = require('aws-sdk');
 const docClient = new AWS.DynamoDB.DocumentClient({region: 'us-west-2'});
 
 export class AppEntityDao {
-    saveAppEntity(applicationId: string, companyId: string, entityId: string, appEntity:AppEntity) {
+
+  saveAppEntity(applicationId: string, companyId: string, entityId: string, appEntity:AppEntity) {
       return new Promise(async function(resolve, reject) {
         try {
           appEntity.applicationId = applicationId;
