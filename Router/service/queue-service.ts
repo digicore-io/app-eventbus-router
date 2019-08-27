@@ -1,4 +1,5 @@
-import { EvendtDao } from "./dao/event-dao";
+import { EvendtDao } from "../dao/event-dao";
+import { Application, EventRequest, CompanyAppEvent, DestinationType } from "../classes";
 
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'us-west-2' });
@@ -8,6 +9,7 @@ const uuidv4 = require('uuid/v4');
 const eventDao = new EvendtDao();
 
 export class QueueService {
+ 
     async processMessages(event) {
         for (const item of event.Records)
             await this.processMessage(item);
@@ -32,7 +34,6 @@ export class QueueService {
                 const app: Application = <Application>await eventDao.getApplication(appEvent.applicationId)
                 await this.routeRequestToApp(eventRequest, appEvent, app);
             } catch (error) {
-                console.log('CAUGHT ERROR');
                 console.log('Event Request', eventRequest)
                 await eventDao.logError(eventRequest, error);
             }
@@ -45,6 +46,7 @@ export class QueueService {
             case DestinationType.SQS: {
                 eventRequest.response = await this.sendSQS(eventRequest, appEvent, app);
                 await eventDao.logEventRequest(eventRequest, app.id);
+                console.log('Routed event request')
                 break;
             }
             default: {
@@ -77,32 +79,4 @@ export class QueueService {
             });
         });
     }
-}
-
-export class EventRequest {
-    companyId: string;
-    event: string;
-    applicationId: string;
-    payload: any;
-    response: any;
-    companyAppEventId:string;
-}
-
-export class CompanyAppEvent {
-    id: string;
-    companyId: string;
-    event: string;
-    applicationId: string;
-    config: any;
-}
-
-export class Application {
-    id: string;
-    destinationType: DestinationType;
-    destinationUrl: string;
-    destinationArn: string;
-}
-
-export const enum DestinationType {
-    SQS = 'SQS',
 }

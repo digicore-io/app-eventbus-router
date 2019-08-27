@@ -1,4 +1,5 @@
-import { EventRequest } from "../queue-service";
+import { EventRequest, CompanyAppEvent } from "../classes";
+
 
 var AWS = require("aws-sdk");
 const uuidv4 = require('uuid/v4');
@@ -8,7 +9,7 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 
 export class EvendtDao {
     getCompanyAppEvents(companyId: string, event:string) {
-        return new Promise(async function (resolve, reject) {
+        return new Promise(async function (resolve, reject)  {
             
             const params = {
                 TableName: 'eventbus-companyAppEvent',

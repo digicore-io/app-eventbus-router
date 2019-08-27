@@ -7,6 +7,7 @@ service:
 plugins:
   - serverless-webpack
   - serverless-offline
+  - serverless-domain-manager
 
 custom:
   sqs:
@@ -24,15 +25,30 @@ custom:
   tableEventLog:
     dev: arn:aws:dynamodb:us-west-2:951585821496:table/eventbus-eventLog
     prod: pending
-
+  domain:
+    domainName:
+      dev: 'dev-api.digicore.io'
+      prod: 'api.diginpm core.io' 
+  customDomain:  
+      domainName: ${self:custom.domain.domainName.${self:provider.stage}} 
+      basePath: 'app-api'
+      stage: ${self:provider.stage}
+      createRoute53Record: true
+      certificateName: '*.digicore.io'
+      endpointType: 'edge'
+          
 provider:
   name: aws
   runtime: nodejs10.x
   region: us-west-2
   stage: ${opt:stage,'dev'}
+  stackName: event-bus-router
   deploymentBucket:
     name: ${self:custom.deploymentBucket.${self:provider.stage}}
     serverSideEncryption: AES256
+  apiKeys:
+    - api-key
+  apiName: api.eventbus-router
   role: arn:aws:iam::951585821496:role/LambdaEventBusRouter
   #role: ${self:custom.role.${self:provider.stage}}
   iamRoleStatements:
@@ -60,5 +76,10 @@ functions:
     timeout: 30
     events:
       - sqs: ${self:custom.sqs.${self:provider.stage}}
+      - http:
+          path: event
+          method: post
+          cors: true
+          private: true
 
  	
