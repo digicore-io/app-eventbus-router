@@ -1,4 +1,4 @@
-import { EventRequest, CompanyAppEvent } from "../classes";
+import { EventRequest } from "../classes";
 
 
 var AWS = require("aws-sdk");

@@ -2,7 +2,8 @@
  * Not need to customise this. Edit the routes in routes.ts
  */
 import {Routes} from './routes';
-import {Route} from './classes'
+import { Route } from '../../NodeJS-Common/common-classes';
+
 const routes = new Routes();
 
 export class Router{

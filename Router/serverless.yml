@@ -42,7 +42,6 @@ provider:
   runtime: nodejs10.x
   region: us-west-2
   stage: ${opt:stage,'dev'}
-  stackName: event-bus-router
   deploymentBucket:
     name: ${self:custom.deploymentBucket.${self:provider.stage}}
     serverSideEncryption: AES256

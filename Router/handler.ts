@@ -1,20 +1,18 @@
 
 import 'source-map-support/register';
 import { QueueService } from './service/queue-service';
-import { EvendtDao } from './dao/event-dao';
-import { ApiService } from './service/api-service';
 import { Router } from './router';
-import { Response, HttpError } from './classes';
+import { HttpError, Response } from '../../NodeJS-Common/common-classes';
+import { BaseService } from '../../NodeJS-Common/base-service';
 
 var queueService = new QueueService();
-var apiService = new ApiService();
-var eventDao = new EvendtDao();
-
+var baseService = new BaseService();
+const API = 'Eventbus Router';
 export const router = async (event, _context) => {
   
 
-
-  if (event.headers) {  // API Gateway request from external source
+  if (event.headers) {  
+    // API Gateway request from external source
     let router = new Router();
     let startTime = new Date().getTime();
 
@@ -23,19 +21,25 @@ export const router = async (event, _context) => {
       let result = await router.handleRoute(event);
 
       let endTime = new Date().getTime();
-      return getResponse(new Response(200, true, result, event, endTime - startTime));
+      return getResponse(new Response(200, true, result, event, endTime - startTime,API));
     } catch (err) {
       let endTime = new Date().getTime();
-      console.log(err)
+      let response;
       if (err instanceof HttpError == false){
-        console.log('test')
-        return getResponse(new Response(500, false, "" + err, event, endTime - startTime))
+        response = getResponse(new Response(500, false, "" + err, event, endTime - startTime, API))
       }
       else
-        return getResponse(new Response(err.status, false, err.message, event, endTime - startTime));
+        response = getResponse(new Response(err.status, false, err.message, event, endTime - startTime, API));
+
+      baseService.logToSlack('devops-event-bus', 'EventBus Router', response);
     }
-  } else //SQS Message
-    await queueService.processMessages(event);
+  } else {
+    //SQS Message
+    try{
+      await queueService.processMessages(event);
+    }catch(err){
+      baseService.logToSlack('devops-event-bus', 'EventBus Router', err);
+    }
 }
 
 function getResponse(body: any) {

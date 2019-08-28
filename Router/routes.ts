@@ -1,6 +1,7 @@
 
-import { Route, HttpError } from './classes'
+
 import { ApiService } from './service/api-service';
+import { HttpError, Route } from '../../NodeJS-Common/common-classes';
 const apiService = new ApiService();
 
 export class Routes {

@@ -1,7 +1,8 @@
 import { EvendtDao } from "../dao/event-dao";
-import { Route, CompanyAppEvent, HttpError, EventRequest, Application } from "../classes";
-import { BaseService } from "./base-service";
+import { CompanyAppEvent, EventRequest, Application } from "../classes";
+import { BaseService } from "../../../NodeJS-Common/base-service";
 import { QueueService } from "./queue-service";
+import { HttpError, Route } from "../../../NodeJS-Common/common-classes";
 
 const AWS = require('aws-sdk');
 
@@ -15,11 +16,12 @@ export class ApiService extends BaseService {
         this.validateParam(route, 'event');
         this.validateParam(route, 'applicationId');
         this.validateParam(route, 'token');
-
+d
         let companyAppEvents:any = await eventDao.getCompanyAppEvents(route.queryParameters.companyId, route.queryParameters.event);
         
         if(companyAppEvents.length == 0)
-            console.log('Received event for companyId:', route.queryParameters.event, route.queryParameters.companyId);
+            this.logToSlack('devops-event-bus', 'Eventbus Router', "Received external event for a company that doesn't have event configured."
+            + " Event (" + route.queryParameters.event + ")" + ' Company ID (' + route.queryParameters.companyId + ')');
 
         for(let appEvent of companyAppEvents){
             if(appEvent.applicationId == route.queryParameters.applicationId)
