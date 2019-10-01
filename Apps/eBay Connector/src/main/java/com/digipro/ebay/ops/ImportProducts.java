@@ -16,7 +16,6 @@ import com.amazonaws.services.simplesystemsmanagement.model.ParameterNotFoundExc
 import com.digipro.ebay.dao.ProductDao;
 import com.digipro.ebay.ro.AppEntity;
 import com.digipro.ebay.ro.api.EntityApiResponse;
-import com.digipro.ebay.service.GsonUtil;
 import com.digipro.ebay.service.Product;
 import com.digipro.ebay.service.ProductService;
 import com.ebay.sdk.ApiContext;
@@ -26,6 +25,8 @@ import com.ebay.sdk.call.GetSellerListCall;
 import com.ebay.soap.eBLBaseComponents.DetailLevelCodeType;
 import com.ebay.soap.eBLBaseComponents.ItemType;
 import com.github.kevinsawicki.http.HttpRequest;
+
+import io.digicore.lambda.GsonUtil;
 
 public class ImportProducts {
 

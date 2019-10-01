@@ -2,34 +2,27 @@ package com.digipro.ebay.service;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Calendar;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.apache.http.HttpStatus;
 
-import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
-import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClientBuilder;
-import com.amazonaws.services.simplesystemsmanagement.model.GetParameterRequest;
-import com.amazonaws.services.simplesystemsmanagement.model.GetParameterResult;
-import com.amazonaws.services.simplesystemsmanagement.model.GetParametersRequest;
-import com.amazonaws.services.simplesystemsmanagement.model.Parameter;
-import com.amazonaws.services.simplesystemsmanagement.model.ParameterNotFoundException;
-import com.digipro.ebay.dao.EventLogDao;
-import com.digipro.ebay.model.EventLog;
 import com.digipro.ebay.ro.AppEntity;
 import com.digipro.ebay.ro.DpmPayload;
-import com.digipro.ebay.ro.Event;
 import com.digipro.ebay.ro.api.EntityApiResponse;
 import com.ebay.sdk.ApiException;
 import com.github.kevinsawicki.http.HttpRequest;
+
+import io.digicore.lambda.BaseService;
+import io.digicore.lambda.GsonUtil;
+import io.digicore.lambda.model.LogStatus;
+import io.digicore.lambda.ro.CompanyEventRo;
 
 /**
  * https://github.com/kevinsawicki/http-request
  * 
  *
  */
-public class CoreService {
+public class CoreService extends BaseService {
 	private static String ENV = "local";
 	private static Properties props;
 	private static String apiKey;
@@ -37,11 +30,11 @@ public class CoreService {
 	public CoreService() {
 		if (System.getenv("STAGE") != null)
 			ENV = System.getenv("STAGE");
-
-		System.err.println("Environment " + ENV);
+		else
+			throw new RuntimeException("STAGE must be set in your environment variables");
 
 		if (apiKey == null)
-			apiKey = ParamUtils.getParameter("api-key-main");
+			apiKey = getParameter("api-key-main");
 
 		if (props == null) {
 			try {
@@ -53,34 +46,19 @@ public class CoreService {
 		}
 	}
 
-	private String getApiKey() {
-		try {
-			AWSSimpleSystemsManagement client = AWSSimpleSystemsManagementClientBuilder.defaultClient();
-
-			GetParameterRequest pr = new GetParameterRequest();
-			pr.withName("api-key-main").setWithDecryption(true);
-			GetParameterResult result = client.getParameter(pr);
-			Parameter param = result.getParameter();
-
-			return param.getValue();
-		} catch (ParameterNotFoundException e) {
-			throw new RuntimeException("Couldn't get the API key from SSM");
-		}
-	}
-
-	public void processMessage(Event event) {
+	public String processMessage(CompanyEventRo event) {
 		if (event.getEvent().equals(com.digipro.ebay.service.Event.EXTERNAL_EBAY_PRODUCT_CHANGE.name())) {
 			EbayToDpmService service = new EbayToDpmService(props);
-			service.processEbayProductChange(event, getApiKey());
+			service.processEbayProductChange(event, apiKey);
+			return null;
 		} else
-			processDpmMessage(event);
+			return processDpmMessage(event);
 	}
 
-	public void processDpmMessage(Event event) {
-		String apiKey = getApiKey();
+	public String processDpmMessage(CompanyEventRo event) {
 		System.err.println("Processing Message");
 
-		DpmPayload payload = GsonUtil.gson.fromJson((String) event.getPayload(), DpmPayload.class);
+		DpmPayload payload = GsonUtil.gson.fromJson(event.getPayload().toString(), DpmPayload.class);
 		String appId = event.getApplicationId();
 		String companyId = event.getCompanyId();
 		String entityId = payload.getId();
@@ -109,58 +87,36 @@ public class CoreService {
 								String.format("Could not save response from eBay. Company ID %s - Product ID %s - Ebay Item ID %s", event.getCompanyId(), payload.getId(), itemId));
 				}
 
+				return itemId;
+
 			} else if (code == HttpStatus.SC_OK) {
 				EntityApiResponse response = GsonUtil.gson.fromJson(request.body(), EntityApiResponse.class);
 				service.updateProductListing(response.getPayload().getData().getItemId(), event, payload);
+				return response.getPayload().getData().getItemId();
 			} else
 				throw new Exception("Unexpected response code from Api App Manager: " + code);
 
 		} catch (ApiException ae) {
 			//TODO: Problem with the listing. Send notification to App Slack Channel
+			String message = String.format("Problem listing/updating a product on eBay. Company ID: $s - Product ID: $s", companyId, entityId);
+			message += "\n\n" + ae.getMessage();
+			System.err.println(message);
 
-			System.err.println(ae.getMessage());
-			log(event, ae.getMessage(), LogStatus.ERROR);
+			logToSlack("devops-ebay-app", "App - eBay Connector", message);
+			log(event, message, LogStatus.ERROR);
 			throw new RuntimeException(ae);
 		} catch (Exception e) {
-			//TODO:  Send notification to EventBus Slack Channel
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
 
-			e.printStackTrace();
+			String message = String.format("Exception listing/updating a product on eBay. Company ID: $s - Product ID: $s", companyId, entityId);
+			message += "\n\n" + sw.toString();
+
+			logToSlack("dev-ops-eventbus", "App - eBayConnector", message);
 			logError(event, e);
 			throw new RuntimeException(e);
 		}
 	}
 
-	public void log(Event appEvent, Object info, LogStatus status) {
-		EventLog log = new EventLog();
-		log.setId(UUID.randomUUID().toString());
-		log.setApplicationId(appEvent.getApplicationId());
-		log.setCreated(Calendar.getInstance());
-		log.setStatus(status.name());
-		log.setEventRequest(GsonUtil.gson.toJson(appEvent));
-
-		if (info instanceof String)
-			log.setInfo((String) info);
-		else
-			log.setInfo(GsonUtil.gson.toString());
-
-		EventLogDao dao = new EventLogDao();
-		dao.save(log);
-	}
-
-	public void logError(Event appEvent, Exception e) {
-		EventLog log = new EventLog();
-		log.setId(UUID.randomUUID().toString());
-		log.setApplicationId(appEvent.getApplicationId());
-		log.setCreated(Calendar.getInstance());
-		log.setStatus(LogStatus.EXCEPTION.name());
-		log.setEventRequest(GsonUtil.gson.toJson(appEvent));
-
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
-		e.printStackTrace(pw);
-		log.setInfo(sw.toString());
-
-		EventLogDao dao = new EventLogDao();
-		dao.save(log);
-	}
 }

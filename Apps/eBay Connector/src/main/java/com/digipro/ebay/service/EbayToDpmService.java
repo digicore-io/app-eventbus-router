@@ -5,16 +5,18 @@ import java.util.Properties;
 
 import org.apache.http.HttpStatus;
 
-import com.digipro.ebay.dao.CompanyAppEventDao;
 import com.digipro.ebay.dao.ProductDao;
-import com.digipro.ebay.model.CompanyAppEvent;
 import com.digipro.ebay.ro.AppEntity;
-import com.digipro.ebay.ro.Event;
 import com.digipro.ebay.ro.api.EntityApiResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.github.kevinsawicki.http.HttpRequest;
 import com.google.gson.JsonObject;
+
+import io.digicore.lambda.GsonUtil;
+import io.digicore.lambda.dao.CompanyAppEventDao;
+import io.digicore.lambda.model.CompanyAppEvent;
+import io.digicore.lambda.ro.CompanyEventRo;
 
 public class EbayToDpmService {
 
@@ -24,7 +26,7 @@ public class EbayToDpmService {
 		this.props = props;
 	}
 
-	public void processEbayProductChange(Event event, String apiKey) {
+	public void processEbayProductChange(CompanyEventRo event, String apiKey) {
 
 		try {
 			CompanyAppEventDao eventDao = new CompanyAppEventDao();
@@ -43,7 +45,7 @@ public class EbayToDpmService {
 			ProductDao dao = new ProductDao();
 			String defaultFamilyId = config.get("defaultFamilyId").getAsString();
 			ProductService prodService = new ProductService();
-			Product product = prodService.getProductFromItemXML(event.getPayload(), event.getCompanyId(), defaultFamilyId, schema, dao);
+			Product product = prodService.getProductFromItemXML(event.getPayload().getAsString(), event.getCompanyId(), defaultFamilyId, schema, dao);
 
 			//Check if this is an insert or update
 			String endpoint = String.format("applications/%s/companies/%s/entities/%s", event.getApplicationId(), event.getCompanyId(), product.getEbayItemId());

@@ -1,9 +1,9 @@
 {"companyId":"5555","event":"ECOM_PRODUCT_UPDATED","applicationId":"d21ee17b-c1cb-46fe-9ebb-182e27bd7075","payload":
             	{
-            	"id":"12312431345111",
+            	"id":"1569947579993",
 				"familyId":"",
-				"sku":"SKU857345111",
-				"name":"Test Product 5111",
+				"sku":"SKU857345111121",
+				"name":"Test 1569947579993",
 				"description":"This is a test product from the API - Long description",
 				"shortDescription":"This is a test product from the API - Long description",
 				"slug":"",

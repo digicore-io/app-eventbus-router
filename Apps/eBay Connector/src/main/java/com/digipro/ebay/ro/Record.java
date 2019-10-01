@@ -4,6 +4,8 @@ package com.digipro.ebay.ro;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import io.digicore.lambda.ro.CompanyEventRo;
+
 public class Record {
 
     @SerializedName("messageId")
@@ -14,7 +16,7 @@ public class Record {
     private String receiptHandle;
     @SerializedName("body")
     @Expose
-    private Event body;
+    private CompanyEventRo body;
     @SerializedName("attributes")
     @Expose
     private Attributes attributes;
@@ -50,11 +52,11 @@ public class Record {
         this.receiptHandle = receiptHandle;
     }
 
-    public Event getBody() {
+    public CompanyEventRo getBody() {
         return body;
     }
 
-    public void setBody(Event body) {
+    public void setBody(CompanyEventRo body) {
         this.body = body;
     }
 

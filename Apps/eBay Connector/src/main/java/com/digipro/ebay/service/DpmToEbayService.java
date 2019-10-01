@@ -1,27 +1,19 @@
 package com.digipro.ebay.service;
 
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Properties;
 
-import com.digipro.ebay.ro.AppEntity;
-import com.digipro.ebay.ro.Event;
 import com.digipro.ebay.ro.DpmPayload;
-import com.digipro.ebay.ro.api.Data;
 import com.ebay.sdk.ApiContext;
 import com.ebay.sdk.ApiCredential;
 import com.ebay.sdk.ApiException;
-import com.ebay.sdk.TimeFilter;
 import com.ebay.sdk.call.AddItemCall;
-import com.ebay.sdk.call.GetItemCall;
-import com.ebay.sdk.call.GetSellerListCall;
 import com.ebay.sdk.call.ReviseItemCall;
 import com.ebay.sdk.call.VerifyAddItemCall;
 import com.ebay.soap.eBLBaseComponents.AmountType;
 import com.ebay.soap.eBLBaseComponents.CategoryType;
 import com.ebay.soap.eBLBaseComponents.CountryCodeType;
 import com.ebay.soap.eBLBaseComponents.CurrencyCodeType;
-import com.ebay.soap.eBLBaseComponents.FeesType;
 import com.ebay.soap.eBLBaseComponents.ItemType;
 import com.ebay.soap.eBLBaseComponents.ListingDurationCodeType;
 import com.ebay.soap.eBLBaseComponents.ListingTypeCodeType;
@@ -30,18 +22,26 @@ import com.ebay.soap.eBLBaseComponents.SellerProfilesType;
 import com.ebay.soap.eBLBaseComponents.SellerReturnProfileType;
 import com.ebay.soap.eBLBaseComponents.SellerShippingProfileType;
 
-public class DpmToEbayService {
+import io.digicore.lambda.BaseService;
+import io.digicore.lambda.GsonUtil;
+import io.digicore.lambda.model.LogStatus;
+import io.digicore.lambda.ro.CompanyEventRo;
+
+public class DpmToEbayService extends BaseService {
 
 	Properties props;
+	public static ApiContext context;
 
+	//This is purely for testing purposes
 	public DpmToEbayService(Properties props) {
 		this.props = props;
+		if (context == null)
+			context = getApiContext();
 	}
 
-	public String createProductListing(Event event, DpmPayload payload) throws ApiException, Exception {
+	public String createProductListing(CompanyEventRo event, DpmPayload payload) throws ApiException, Exception {
 
 		CoreService service = new CoreService();
-		ApiContext context = getApiContext();
 
 		if (!payload.isEbayPublish()) {
 			System.err.println("Not publishing. Ebay Publish = false");
@@ -72,7 +72,7 @@ public class DpmToEbayService {
 	 * If status = 0 then just disable the product
 	 * @param body
 	 */
-	public void updateProductListing(String itemId, Event event, DpmPayload payload) throws ApiException, Exception {
+	public void updateProductListing(String itemId, CompanyEventRo event, DpmPayload payload) throws ApiException, Exception {
 
 		ItemType item = buildItem(payload);
 		item.setItemID(itemId);
@@ -134,8 +134,8 @@ public class DpmToEbayService {
 	private ApiContext getApiContext() {
 		ApiContext apiContext = new ApiContext();
 		ApiCredential cred = apiContext.getApiCredential();
-		cred.seteBayToken(ParamUtils.getParameter("app-ebayconnector-ebay-token"));
-		apiContext.setApiServerUrl(System.getenv("EBAY_API_URL"));
+		cred.seteBayToken(getParameter("app-ebayconnector-ebay-token"));
+		apiContext.setApiServerUrl(props.getProperty("EBAY_API_URL"));
 
 		return apiContext;
 	}
