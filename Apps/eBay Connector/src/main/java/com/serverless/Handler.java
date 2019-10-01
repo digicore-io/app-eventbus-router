@@ -7,9 +7,11 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import com.digipro.ebay.dao.ProductDao;
 import com.digipro.ebay.ro.Event;
 import com.digipro.ebay.service.CoreService;
 import com.digipro.ebay.service.GsonUtil;
+import com.digipro.ebay.service.Product;
 
 public class Handler implements RequestHandler<SQSEvent, Void> {
 
@@ -18,11 +20,15 @@ public class Handler implements RequestHandler<SQSEvent, Void> {
 	@Override
 	public Void handleRequest(SQSEvent sqsEvent, Context context) {
 		try {
-			CoreService service = new CoreService();
-			for (SQSMessage msg : sqsEvent.getRecords()) {
-				Event event = GsonUtil.gson.fromJson(msg.getBody(), Event.class);
-				service.processMessage(event);
-			}
+			ProductDao dao = new ProductDao();
+			dao.selectTest();
+
+			//			CoreService service = new CoreService();
+			//			for (SQSMessage msg : sqsEvent.getRecords()) {
+			//				System.err.println("MESSAGE: " + msg.getBody());
+			//				Event event = GsonUtil.gson.fromJson(msg.getBody(), Event.class);
+			//				service.processMessage(event);
+			//			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

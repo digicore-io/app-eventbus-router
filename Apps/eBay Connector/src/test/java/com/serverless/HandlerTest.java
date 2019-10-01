@@ -41,7 +41,7 @@ class HandlerTest {
 	}
 
 	@Test
-	void testProcessSQSNewProductFromEbay() {
+	void testProcessNewMessageFromEbay() {
 		try {
 			Handler handler = new Handler();
 			String json = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("event-sqs-from-ebay.json"));

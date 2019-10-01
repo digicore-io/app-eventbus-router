@@ -31,7 +31,7 @@ import com.github.kevinsawicki.http.HttpRequest;
  */
 public class CoreService {
 	private static String ENV = "local";
-	private Properties props;
+	private static Properties props;
 	private static String apiKey;
 
 	public CoreService() {
@@ -56,6 +56,7 @@ public class CoreService {
 	private String getApiKey() {
 		try {
 			AWSSimpleSystemsManagement client = AWSSimpleSystemsManagementClientBuilder.defaultClient();
+
 			GetParameterRequest pr = new GetParameterRequest();
 			pr.withName("api-key-main").setWithDecryption(true);
 			GetParameterResult result = client.getParameter(pr);
@@ -68,9 +69,9 @@ public class CoreService {
 	}
 
 	public void processMessage(Event event) {
-		if (event.getEvent().equals(com.digipro.ebay.service.Event.EBAY_PRODUCT_CHANGE.name())) {
+		if (event.getEvent().equals(com.digipro.ebay.service.Event.EXTERNAL_EBAY_PRODUCT_CHANGE.name())) {
 			EbayToDpmService service = new EbayToDpmService(props);
-			service.processEbayProductChange(event);
+			service.processEbayProductChange(event, getApiKey());
 		} else
 			processDpmMessage(event);
 	}
@@ -101,10 +102,11 @@ public class CoreService {
 					item.setEntityId(payload.getId());
 					item.getData().setItemId(itemId);
 
-					String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).send(GsonUtil.gson.toJson(item)).header("x-api-key", apiKey).code();
+					String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey).send(GsonUtil.gson.toJson(item)).code();
 
 					if (!responseCode.startsWith("2"))
-						throw new Exception(String.format("Could not save response from eBay. Company ID %s - Product ID %s - Ebay Item ID %s", event.getCompanyId(), payload.getId(), itemId));
+						throw new Exception(
+								String.format("Could not save response from eBay. Company ID %s - Product ID %s - Ebay Item ID %s", event.getCompanyId(), payload.getId(), itemId));
 				}
 
 			} else if (code == HttpStatus.SC_OK) {

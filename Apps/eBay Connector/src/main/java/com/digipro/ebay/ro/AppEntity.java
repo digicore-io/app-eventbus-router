@@ -6,7 +6,16 @@ public class AppEntity {
 	private Data data = new Data();
 
 	public class Data {
-		String itemId;
+		String itemId; //EbayID set if doing DPM -> Ebay
+		String productId; //DPM ID set if doing Ebay -> DPM
+
+		public String getProductId() {
+			return productId;
+		}
+
+		public void setProductId(String productId) {
+			this.productId = productId;
+		}
 
 		public String getItemId() {
 			return itemId;

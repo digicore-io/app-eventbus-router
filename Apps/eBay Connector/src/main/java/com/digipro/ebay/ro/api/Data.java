@@ -6,16 +6,26 @@ import com.google.gson.annotations.SerializedName;
 
 public class Data {
 
-    @SerializedName("itemId")
-    @Expose
-    private String itemId;
+	@SerializedName("itemId")
+	@Expose
+	private String itemId;
 
-    public String getItemId() {
-        return itemId;
-    }
+	private String productId;
 
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
-    }
+	public String getProductId() {
+		return productId;
+	}
+
+	public void setProductId(String productId) {
+		this.productId = productId;
+	}
+
+	public String getItemId() {
+		return itemId;
+	}
+
+	public void setItemId(String itemId) {
+		this.itemId = itemId;
+	}
 
 }
