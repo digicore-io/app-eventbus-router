@@ -3,8 +3,6 @@ package com.digipro.ebay.ops;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.http.HttpStatus;
@@ -20,7 +18,6 @@ import com.digipro.ebay.ro.AppEntity;
 import com.digipro.ebay.ro.api.EntityApiResponse;
 import com.digipro.ebay.service.GsonUtil;
 import com.digipro.ebay.service.Product;
-import com.digipro.ebay.service.ProductFamily;
 import com.digipro.ebay.service.ProductService;
 import com.ebay.sdk.ApiContext;
 import com.ebay.sdk.ApiCredential;
@@ -28,7 +25,6 @@ import com.ebay.sdk.TimeFilter;
 import com.ebay.sdk.call.GetSellerListCall;
 import com.ebay.soap.eBLBaseComponents.DetailLevelCodeType;
 import com.ebay.soap.eBLBaseComponents.ItemType;
-import com.ebay.soap.eBLBaseComponents.PaginationType;
 import com.github.kevinsawicki.http.HttpRequest;
 
 public class ImportProducts {

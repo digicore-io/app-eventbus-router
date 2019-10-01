@@ -183,7 +183,7 @@ public class ProductDao {
 		stmt.setString(2, product.getTitle());
 		stmt.setString(3, product.getDescription());
 		stmt.setString(4, product.getSlug());
-		stmt.setString(5, product.getQuantity());
+		stmt.setInt(5, product.getQuantity());
 		stmt.setString(6, product.getPrice());
 		stmt.setString(7, product.getLocId());
 		stmt.setString(8, product.getPrimaryImage());
@@ -229,7 +229,7 @@ public class ProductDao {
 		stmt.setString(1, product.getTitle());
 		stmt.setString(2, product.getDescription());
 		stmt.setString(3, product.getSlug());
-		stmt.setString(4, product.getQuantity());
+		stmt.setInt(4, product.getQuantity());
 		stmt.setString(5, product.getPrice());
 		stmt.setString(6, product.getLocId());
 		stmt.setString(7, product.getPrimaryImage());

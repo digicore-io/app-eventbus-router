@@ -1,18 +1,26 @@
 package com.digipro.ebay.service;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.digipro.ebay.dao.ProductDao;
 import com.ebay.soap.eBLBaseComponents.ItemType;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 public class ProductService {
 
 	static Map<String, String> familyIdMap = new HashMap<String, String>();
 
 	public Product getBuildProductFromItem(ItemType item, String companyId, String defaultFamilyId, String schema, ProductDao dao) throws Exception {
+
+		String categoryName = null;
+		if (item.getPrimaryCategory() != null)
+			categoryName = item.getPrimaryCategory().getCategoryName();
+
 		Product product = new Product();
-		product.setProductFamilyId(getFamilyId(item, defaultFamilyId, schema, dao, companyId));
+		product.setProductFamilyId(getFamilyId(categoryName, defaultFamilyId, schema, dao, companyId));
 		product.setTitle(item.getTitle());
 		product.setLocId(companyId);
 		String strRegEx = "<[^>]*>";
@@ -21,22 +29,59 @@ public class ProductService {
 
 		product.setEbayItemId(item.getItemID());
 		product.setPrice(String.valueOf(item.getSellingStatus().getCurrentPrice().getValue()));
-		product.setQuantity(String.valueOf(item.getQuantity()));
+		product.setQuantity(item.getQuantity());
 		product.setSlug(product.getTitle().replaceAll("[^a-zA-Z0-9]", ""));
 
 		product.setPrimaryImageAlt(item.getTitle());
 		if (item.getPictureDetails() != null && item.getPictureDetails().getPictureURLLength() > 0)
 			product.setPrimaryImage(item.getPictureDetails().getPictureURL()[0]);
 
+		if (product.getQuantity() > 0)
+			product.setStatus(1);
+		else
+			product.setStatus(0);
 		return product;
 	}
 
-	private String getFamilyId(ItemType item, String defaultFamilyId, String schema, ProductDao dao, String companyId) throws Exception {
+	public Product getProductFromItemXML(String xml, String companyId, String defaultFamilyId, String schema, ProductDao dao) throws Exception {
+		XmlMapper xmlMapper = new XmlMapper();
+		xml = xml.substring(xml.indexOf("<soapenv:Body>") + 14, xml.length());
+		xml = xml.substring(0, xml.indexOf("</soapenv:Body>"));
 
-		if (item.getPrimaryCategory() != null) {
-			System.err.println("Category:    " + item.getPrimaryCategory().getCategoryName());
+		JsonNode jsonNode = xmlMapper.readTree(xml.getBytes());
+		JsonNode item = jsonNode.get("Item");
 
-			String categoryName = item.getPrimaryCategory().getCategoryName();
+		String categoryName = item.get("PrimaryCategory").get("CategoryName").textValue();
+
+		String strRegEx = "<[^>]*>";
+		Product product = new Product();
+		product.setEbayItemId(item.get("ItemID").textValue());
+		product.setProductFamilyId(getFamilyId(categoryName, defaultFamilyId, schema, dao, companyId));
+		product.setTitle(item.get("Title").textValue().replaceAll("[^a-zA-Z0-9]", ""));
+		product.setDescription(item.get("Description").textValue().replaceAll(strRegEx, ""));
+		product.setSlug(product.getTitle().replace(" ", "-"));
+		product.setPrice(item.get("SellingStatus").get("CurrentPrice").get("").textValue());
+		product.setQuantity(item.get("Quantity").intValue());
+		product.setLocId(companyId);
+		product.setPrimaryImageAlt(product.getTitle());
+		product.setCreated(Calendar.getInstance());
+
+		if (item.get("PictureDetails").get("PictureURL") != null)
+			product.setPrimaryImage(item.get("PictureDetails").get("PictureURL").textValue());
+
+		if (item.get("Quantity").asInt() > 0)
+			product.setStatus(1);
+		else
+			product.setStatus(0);
+
+		return product;
+
+	}
+
+	private String getFamilyId(String categoryName, String defaultFamilyId, String schema, ProductDao dao, String companyId) throws Exception {
+
+		if (categoryName != null) {
+
 			if (categoryName.indexOf(":") > -1)
 				categoryName = categoryName.substring(0, categoryName.indexOf(":"));
 
@@ -64,4 +109,5 @@ public class ProductService {
 
 		return defaultFamilyId;
 	}
+
 }

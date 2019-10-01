@@ -14,8 +14,16 @@ public class Product {
 	private Calendar created;
 	private String locId;
 	private String slug;
-	private String quantity;
+	private int quantity;
 	private int status;
+
+	public int getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(int quantity) {
+		this.quantity = quantity;
+	}
 
 	public String getProductFamilyId() {
 		return productFamilyId;
@@ -47,14 +55,6 @@ public class Product {
 
 	public void setEbayItemId(String ebayItemId) {
 		this.ebayItemId = ebayItemId;
-	}
-
-	public String getQuantity() {
-		return quantity;
-	}
-
-	public void setQuantity(String quantity) {
-		this.quantity = quantity;
 	}
 
 	public String getPrimaryImageAlt() {
