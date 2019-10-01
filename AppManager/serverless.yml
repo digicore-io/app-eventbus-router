@@ -6,6 +6,7 @@ plugins:
   - serverless-offline
   - serverless-domain-manager
   - serverless-api-compression
+  - serverless-add-api-key
 
 custom:
   webpack:
@@ -13,34 +14,34 @@ custom:
       forceExclude:
         - node_modules/aws-sdk
   role:
-    dev: arn:aws:iam::951585821496:role/Lambda
-    prod: arn:aws:iam::211602931179:role/Lambda
+    dev: arn:aws:iam::997357843271:role/Lambda
+    prod: arn:aws:iam::912918454053:role/Lambda
   deploymentBucket:
-    dev: dpm-lambda-deployment-dev
-    prod: dpm-lambda-deployment
+    dev: digicore-lambda-deployment-dev
+    prod: digicore-lambda-deployment
   profile:
     dev: DigiDev
     prod: DigiProd
   domain:
     domainName:
       dev: 'dev-api.digicore.io'
-      prod: 'api.digicore.io' 
+      prod: 'api.digicoretemp.de' 
   customDomain:  
       domainName: ${self:custom.domain.domainName.${self:provider.stage}} 
       basePath: 'app-api'
       stage: ${self:provider.stage}
       createRoute53Record: true
-      certificateName: '*.digicore.io'
+      certificateName: '*.api.digicoretemp.de'
       endpointType: 'edge'
+  apiKeys:
+    - name: digicore-api-key
 
 provider:
   name: aws
   runtime: nodejs10.x
   stage: ${opt:stage,'dev'}
   profile: ${self:custom.profile.${self:provider.stage}} 
-  region: us-west-2
-  apiKeys:
-    - api-key
+  region: us-east-1
   stackName: app-api
   role: ${self:custom.role.${self:provider.stage}}
   deploymentBucket:
@@ -51,10 +52,11 @@ provider:
     SERVICE_NAME: ${self:service}
 
 
-
+#TODO Add config for swagger gen
 functions:
   service:
     handler: handler.handle
+    name: EventBus-AppManager-${self:provider.stage}
     events:
       - http:
           path: applications/{applicationId}/companies/{companyId}/entities/{entityId}

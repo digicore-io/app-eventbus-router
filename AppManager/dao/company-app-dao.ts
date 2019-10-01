@@ -1,59 +1,48 @@
+import { Params } from "../classes";
 
-import { Location, LocationRequest } from '../classes';
-import { Params, Error } from '../classes'
-import { AppEntity } from '../interfaces';
-const AWS = require('aws-sdk');
-
-const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' });
+const AWS = require("aws-sdk");
+const docClient = new AWS.DynamoDB.DocumentClient({ region: "us-west-2" });
 
 export class CompanyAppDao {
-
-  getCompanyApp(applicationId: string, companyId:string) {
-    return new Promise(async function (resolve, reject) {
+  getCompanyApp(applicationId: string, companyId: string) {
+    return new Promise(async function(resolve, reject) {
       try {
-
         let params = new Params();
         params.TableName = "eventbus-companyApp";
-        params.Key = { "applicationId": applicationId, "companyId": companyId };
+        params.Key = { applicationId: applicationId, companyId: companyId };
 
-        docClient.get(params, function (err, data) {
+        docClient.get(params, function(err, data) {
           if (err) {
             reject(err);
-            throw 'Error: ' + JSON.stringify(err, null, 2);
           } else {
-            if(data.Item){
+            if (data.Item) {
               let companyApp = data.Item;
               companyApp.config = JSON.parse(companyApp.config);
-              resolve(companyApp)
-            }else 
-              resolve();
-            
+              resolve(companyApp);
+            } else resolve();
           }
         });
-
       } catch (err) {
-        console.log('Error occurred', err);
+        console.log("Error occurred", err);
         reject(err);
       }
     });
   }
 
   getCompanyAppEvents(companyId: string, event: string) {
-    return new Promise(async function (resolve, reject) {
-
+    return new Promise(async function(resolve, reject) {
       const params = {
-        TableName: 'eventbus-companyAppEvent',
-        IndexName: 'companyId-event-index',
-        KeyConditionExpression: 'companyId = :companyId and event = :event',
+        TableName: "eventbus-companyAppEvent",
+        IndexName: "companyId-event-index",
+        KeyConditionExpression: "companyId = :companyId and event = :event",
         ExpressionAttributeValues: {
           ":companyId": companyId,
           ":event": event
         }
-      }
+      };
 
-      docClient.query(params, function (err, data) {
+      docClient.query(params, function(err, data) {
         if (err) {
-          console.log(err)
           reject(err);
         } else {
           resolve(data.Items);
@@ -63,7 +52,7 @@ export class CompanyAppDao {
   }
 
   saveCompanyApp(applicationId: string, companyId: string, config: any) {
-    return new Promise(async function (resolve, reject) {
+    return new Promise(async function(resolve, reject) {
       try {
         let companyApp: any = {};
 
@@ -75,25 +64,17 @@ export class CompanyAppDao {
         params.TableName = "eventbus-companyApp";
         params.Item = companyApp;
 
-
-        docClient.put(params, function (err, data) {
+        docClient.put(params, function(err, data) {
           if (err) {
             reject(err);
-            throw 'Error: ' + JSON.stringify(err, null, 2);
           } else {
             resolve(companyApp);
           }
         });
       } catch (err) {
-        console.log('Error occurred', err);
+        console.log("Error occurred", err);
         reject(err);
       }
     });
   }
-
-
-
 }
-
-
-
