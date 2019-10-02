@@ -2,7 +2,7 @@
  * Do not customise this. Edit the routes in routes.ts
  */
 import { Routes } from "./routes";
-import { Route } from "@DigiProMedia/digicore-node/common-classes";
+import { Route } from "@DigiProMedia/digicore-node/lib/common-classes";
 const routes = new Routes();
 
 export class Router {

@@ -26,9 +26,9 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
+    "@DigiProMedia/digicore-node": "1.0.7",
     "async": "^3.0.0",
     "serverless-api-compression": "^1.0.1",
-    "@DigiProMedia/digicore-node": "1.0.1",
     "uuid": "^3.3.2"
   }
 }

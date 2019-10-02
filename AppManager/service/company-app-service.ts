@@ -1,10 +1,15 @@
-import { HttpError, Response } from "@DigiProMedia/digicore-node/common-classes";
-import { BaseService } from "@DigiProMedia/digicore-node/base-service";
+import { HttpError, Response } from "@DigiProMedia/digicore-node/lib/common-classes";
+import { BaseService } from "@DigiProMedia/digicore-node/lib/base-service";
 import { CompanyAppDao } from "../dao/company-app-dao";
+import { SSL_OP_NO_QUERY_MTU } from "constants";
 const companyAppDao = new CompanyAppDao();
 
 export class CompanyAppService extends BaseService {
-  async getApplications(companyId: string, event: string) {
+  constructor() {
+    super();
+  }
+
+  public async getApplications(companyId: string, event: string) {
     if (!companyId) throw new HttpError(400, "Parameter companyId is required");
 
     if (!event) throw new HttpError(400, "Parameter event is required");
@@ -22,7 +27,7 @@ export class CompanyAppService extends BaseService {
     return apps;
   }
 
-  async saveApplicationCompany(applicationId: string, companyId: string, config: any) {
+  public async saveApplicationCompany(applicationId: string, companyId: string, config: any) {
     if (!applicationId) throw new HttpError(400, "Parameter applicationId is required");
 
     await companyAppDao.saveCompanyApp(applicationId, companyId, config).catch(function(error) {
