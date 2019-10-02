@@ -8,14 +8,18 @@ plugins:
   - serverless-webpack
   - serverless-offline
   - serverless-domain-manager
-
+  - serverless-add-api-key
+  
 custom:
   sqs:
-    dev: arn:aws:sqs:us-west-2:951585821496:AppEventBusQueue
-    prod: pending
+    dev: arn:aws:sqs:us-east-1:997357843271:EventBus-Router-Queue
+    prod: arn:aws:sqs:us-east-1:912918454053:EventBus-RoutingQueue
+  role:
+    dev: arn:aws:iam::997357843271:role/Lambda
+    prod: arn:aws:iam::912918454053:role/Lambda
   deploymentBucket:
-    dev: dpm-lambda-deployment-dev
-    prod: dpm-lambda-deployment
+    dev: digicore-lambda-deployment-dev
+    prod: digicore-lambda-deployment
   tableApplication:
     dev: arn:aws:dynamodb:us-west-2:951585821496:table/eventbus-application
     prod: pending
@@ -28,27 +32,34 @@ custom:
   domain:
     domainName:
       dev: 'dev-api.digicore.io'
-      prod: 'api.diginpm core.io' 
+      prod: 'api.digicoretemp.de' 
   customDomain:  
       domainName: ${self:custom.domain.domainName.${self:provider.stage}} 
-      basePath: 'app-api'
+      basePath: 'location'
       stage: ${self:provider.stage}
       createRoute53Record: true
-      certificateName: '*.digicore.io'
+      certificateName: '*.digicoretemp.de'
       endpointType: 'edge'
-          
+  apiKeys:
+    - name: digicore-api-key
+
+
 provider:
   name: aws
   runtime: nodejs10.x
-  region: us-west-2
+  region: us-east-1
   stage: ${opt:stage,'dev'}
+  role: ${self:custom.role.${self:provider.stage}}
   deploymentBucket:
     name: ${self:custom.deploymentBucket.${self:provider.stage}}
     serverSideEncryption: AES256
-  apiKeys:
-    - api-key
+  # apiKeys:
+  #   - api-key
+  # Facing issues with same api-key between multiple services.
+  # https://github.com/serverless/serverless/issues/4664
+  # https://github.com/rrahul963/serverless-add-api-key - This plugin allows sharing
   apiName: api.eventbus-router
-  role: arn:aws:iam::951585821496:role/LambdaEventBusRouter
+
   #role: ${self:custom.role.${self:provider.stage}}
   iamRoleStatements:
   #   - Effect: Allow
@@ -71,7 +82,7 @@ provider:
 functions:
   router:
     handler: handler.router
-    name: EventBus-Router
+    name: EventBus-Router-${self:provider.stage}
     timeout: 30
     events:
       - sqs: ${self:custom.sqs.${self:provider.stage}}
@@ -79,6 +90,6 @@ functions:
           path: event
           method: post
           cors: true
-          private: true
+          private: false
 
  	
