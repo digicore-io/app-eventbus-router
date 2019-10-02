@@ -1,6 +1,5 @@
-import { Location, LocationRequest } from "../classes";
-import { Response, HttpError } from "../../../Lambda-Common/node/common-classes";
-import { BaseService } from "../../../Lambda-Common/node/base-service";
+import { HttpError } from "@DigiProMedia/digicore-node/common-classes";
+import { BaseService } from "@DigiProMedia/digicore-node/base-service";
 import { AppEntityDao } from "../dao/app-entity-dao";
 import { AppEntity } from "../interfaces";
 const appEntityDao = new AppEntityDao();

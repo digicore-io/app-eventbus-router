@@ -2,17 +2,12 @@
  * Do not customise this. Edit the routes in routes.ts
  */
 import { Routes } from "./routes";
-import { Route } from "../../Lambda-Common/node/common-classes";
+import { Route } from "@DigiProMedia/digicore-node/common-classes";
 const routes = new Routes();
 
 export class Router {
   public async handleRoute(event) {
-    let route = new Route(
-      event.requestContext.httpMethod,
-      event.resource,
-      event.pathParameters,
-      event.queryStringParameters
-    );
+    let route = new Route(event.requestContext.httpMethod, event.resource, event.pathParameters, event.queryStringParameters);
 
     switch (route.method) {
       case "GET": {

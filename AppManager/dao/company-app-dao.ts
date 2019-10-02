@@ -1,7 +1,7 @@
 import { Params } from "../classes";
 
 const AWS = require("aws-sdk");
-const docClient = new AWS.DynamoDB.DocumentClient({ region: "us-west-2" });
+const docClient = new AWS.DynamoDB.DocumentClient({ region: "us-east-1" });
 
 export class CompanyAppDao {
   getCompanyApp(applicationId: string, companyId: string) {

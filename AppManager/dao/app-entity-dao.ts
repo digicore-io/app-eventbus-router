@@ -1,4 +1,4 @@
-import { HttpError } from "../../../Lambda-Common/node/common-classes";
+import { HttpError } from "@DigiProMedia/digicore-node/common-classes";
 import { AppEntity } from "../interfaces";
 import { Params } from "../classes";
 const AWS = require("aws-sdk");

@@ -1,5 +1,5 @@
 import { Router } from "./router";
-import { AwsHttpHandler } from "../../Lambda-Common/node/aws-http-handler";
+import { AwsHttpHandler } from "@DigiProMedia/digicore-node/aws-http-handler";
 
 let httpHandler = new AwsHttpHandler();
 const API = "EventBus App Manager";
