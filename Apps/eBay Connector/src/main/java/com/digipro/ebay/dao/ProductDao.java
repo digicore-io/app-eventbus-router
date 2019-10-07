@@ -39,9 +39,8 @@ public class ProductDao {
 	public String selectTest() throws Exception {
 
 		System.err.println("Getting connection");
-		String strCon = getConnectionString();
-		System.err.println("Connection: " + strCon);
-		Connection con = DriverManager.getConnection(getConnectionString());
+
+		Connection con = getConnection();
 		System.err.println("Got connection");
 		StringBuffer sql = new StringBuffer();
 		sql.append("SELECT * FROM digipay_super_admin.api ");
@@ -62,8 +61,7 @@ public class ProductDao {
 	}
 
 	public String selectFamilyId(String familyName, String schema) throws Exception {
-		if (con == null)
-			con = DriverManager.getConnection(getConnectionString());
+		getConnection();
 
 		String sql = "select family_id from " + schema + ".ip_families where family_name = ? ";
 		PreparedStatement stmt = con.prepareStatement(sql);
@@ -79,8 +77,7 @@ public class ProductDao {
 	}
 
 	public String insertFamily(ProductFamily family, String schema) throws Exception {
-		if (con == null)
-			con = DriverManager.getConnection(getConnectionString());
+		getConnection();
 
 		StringBuffer sql = new StringBuffer();
 		sql.append("INSERT INTO ");
@@ -101,7 +98,7 @@ public class ProductDao {
 		stmt.setInt(5, family.getOrgId());
 
 		stmt.execute();
-		System.err.println("Added family");
+
 		ResultSet rs = stmt.getGeneratedKeys();
 		String familyId = null;
 		if (rs.next())
@@ -114,10 +111,8 @@ public class ProductDao {
 
 	public String insertProductData(Product product, String schema, boolean closeConnection) throws Exception {
 
-		if (con == null)
-			con = DriverManager.getConnection(getConnectionString());
+		getConnection();
 
-		System.err.println("Got connection");
 		StringBuffer sql = new StringBuffer();
 		sql.append("INSERT INTO ");
 		sql.append(schema);
@@ -139,7 +134,7 @@ public class ProductDao {
 		stmt.setString(6, "1");
 
 		stmt.execute();
-		System.err.println("Added Product Data");
+
 		ResultSet rs = stmt.getGeneratedKeys();
 		String productId = null;
 		if (rs.next())
@@ -154,10 +149,8 @@ public class ProductDao {
 
 	public String insertProduct(Product product, String schema, boolean closeConnection) throws Exception {
 
-		if (con == null)
-			con = DriverManager.getConnection(getConnectionString());
+		getConnection();
 
-		System.err.println("Got connection");
 		StringBuffer sql = new StringBuffer();
 		sql.append("INSERT INTO ");
 		sql.append(schema);
@@ -177,7 +170,6 @@ public class ProductDao {
 		//sql.append("created_at) ");
 		sql.append("VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) ");
 
-		System.err.println(sql.toString());
 		PreparedStatement stmt = con.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
 		stmt.setString(1, product.getProductFamilyId());
 		stmt.setString(2, product.getTitle());
@@ -193,7 +185,7 @@ public class ProductDao {
 		stmt.setInt(12, 0);
 		stmt.setInt(13, 0);
 		stmt.execute();
-		System.err.println("Added Product");
+
 		ResultSet rs = stmt.getGeneratedKeys();
 		String productId = null;
 		if (rs.next())
@@ -207,8 +199,7 @@ public class ProductDao {
 	}
 
 	public void updateProduct(Product product, String schema, boolean closeConnection) throws Exception {
-		if (con == null)
-			con = DriverManager.getConnection(getConnectionString());
+		getConnection();
 
 		StringBuffer sql = new StringBuffer();
 		sql.append("UPDATE ");
@@ -241,11 +232,13 @@ public class ProductDao {
 		if (closeConnection)
 			con.close();
 
-		System.err.println("Updated");
 	}
 
-	private String getConnectionString() {
+	private Connection getConnection() {
 		try {
+			if (con != null)
+				return con;
+
 			AWSSimpleSystemsManagement client = AWSSimpleSystemsManagementClientBuilder.defaultClient();
 
 			GetParameterRequest pr = new GetParameterRequest();
@@ -253,9 +246,14 @@ public class ProductDao {
 			GetParameterResult result = client.getParameter(pr);
 			Parameter param = result.getParameter();
 
-			return param.getValue();
+			System.err.println("Getting connection");
+			con = DriverManager.getConnection(param.getValue());
+			System.err.println("Got connection");
+			return con;
 		} catch (ParameterNotFoundException e) {
 			throw new RuntimeException("Couldn't get the db connection string from SSM");
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 

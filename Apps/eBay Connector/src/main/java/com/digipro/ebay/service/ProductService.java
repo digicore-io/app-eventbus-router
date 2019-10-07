@@ -3,6 +3,7 @@ package com.digipro.ebay.service;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.digipro.ebay.dao.ProductDao;
 import com.ebay.soap.eBLBaseComponents.ItemType;
@@ -13,14 +14,18 @@ public class ProductService {
 
 	static Map<String, String> familyIdMap = new HashMap<String, String>();
 
-	public Product getBuildProductFromItem(ItemType item, String companyId, String defaultFamilyId, String schema, ProductDao dao) throws Exception {
+	public Product getBuildProductFromItem(ItemType item, String companyId, String defaultFamilyId, String schema, ProductDao dao, Set<String> categoryFilter) throws Exception {
 
 		String categoryName = null;
 		if (item.getPrimaryCategory() != null)
 			categoryName = item.getPrimaryCategory().getCategoryName();
 
 		Product product = new Product();
-		product.setProductFamilyId(getFamilyId(categoryName, defaultFamilyId, schema, dao, companyId));
+		product.setProductFamilyId(getFamilyId(categoryName, defaultFamilyId, schema, dao, companyId, categoryFilter));
+
+		if (product.getProductFamilyId() == null) //Category excluded
+			return null;
+
 		product.setTitle(item.getTitle());
 		product.setLocId(companyId);
 		String strRegEx = "<[^>]*>";
@@ -35,7 +40,10 @@ public class ProductService {
 		product.setPrimaryImageAlt(item.getTitle());
 		if (item.getPictureDetails() != null && item.getPictureDetails().getPictureURLLength() > 0)
 			product.setPrimaryImage(item.getPictureDetails().getPictureURL()[0]);
-
+		else {
+			System.err.println("Skipping product due to no image " + item.getItemID());
+			return null;
+		}
 		if (product.getQuantity() > 0)
 			product.setStatus(1);
 		else
@@ -43,7 +51,7 @@ public class ProductService {
 		return product;
 	}
 
-	public Product getProductFromItemXML(String xml, String companyId, String defaultFamilyId, String schema, ProductDao dao) throws Exception {
+	public Product getProductFromItemXML(String xml, String companyId, String defaultFamilyId, String schema, ProductDao dao, Set<String> categoryFilter) throws Exception {
 		XmlMapper xmlMapper = new XmlMapper();
 		xml = xml.substring(xml.indexOf("<soapenv:Body>") + 14, xml.length());
 		xml = xml.substring(0, xml.indexOf("</soapenv:Body>"));
@@ -56,7 +64,7 @@ public class ProductService {
 		String strRegEx = "<[^>]*>";
 		Product product = new Product();
 		product.setEbayItemId(item.get("ItemID").textValue());
-		product.setProductFamilyId(getFamilyId(categoryName, defaultFamilyId, schema, dao, companyId));
+		product.setProductFamilyId(getFamilyId(categoryName, defaultFamilyId, schema, dao, companyId, categoryFilter));
 		product.setTitle(item.get("Title").textValue().replaceAll("[^a-zA-Z0-9]", ""));
 		product.setDescription(item.get("Description").textValue().replaceAll(strRegEx, ""));
 		product.setSlug(product.getTitle().replace(" ", "-"));
@@ -78,12 +86,26 @@ public class ProductService {
 
 	}
 
-	private String getFamilyId(String categoryName, String defaultFamilyId, String schema, ProductDao dao, String companyId) throws Exception {
+	/**
+	 * Returns null if there is not category or if there is a categoryFilter and it doesn't match. Calling code then ignores this product
+	 * 
+	 */
+	private String getFamilyId(String categoryName, String defaultFamilyId, String schema, ProductDao dao, String companyId, Set<String> categoryFilter) throws Exception {
 
 		if (categoryName != null) {
 
-			if (categoryName.indexOf(":") > -1)
-				categoryName = categoryName.substring(0, categoryName.indexOf(":"));
+			if (categoryName.indexOf(":") > 0) {
+				categoryName = categoryName.substring(categoryName.indexOf(":") + 1, categoryName.length());
+				if (categoryName.indexOf(":") > 0)
+					categoryName = categoryName.substring(0, categoryName.indexOf(":"));
+
+			} else
+				return null;
+
+			if (categoryFilter != null) {
+				if (!categoryFilter.contains(categoryName))
+					return null; //Ingore this product
+			}
 
 			if (familyIdMap.containsKey(categoryName))
 				return defaultFamilyId + "," + familyIdMap.get(categoryName);
@@ -107,7 +129,7 @@ public class ProductService {
 			return defaultFamilyId + "," + familyId;
 		}
 
-		return defaultFamilyId;
+		return null;
 	}
 
 }

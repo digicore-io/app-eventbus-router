@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.http.HttpStatus;
 
@@ -16,6 +17,7 @@ import com.amazonaws.services.simplesystemsmanagement.model.ParameterNotFoundExc
 import com.digipro.ebay.dao.ProductDao;
 import com.digipro.ebay.ro.AppEntity;
 import com.digipro.ebay.ro.api.EntityApiResponse;
+import com.digipro.ebay.service.EbayToDpmService;
 import com.digipro.ebay.service.Product;
 import com.digipro.ebay.service.ProductService;
 import com.ebay.sdk.ApiContext;
@@ -27,6 +29,8 @@ import com.ebay.soap.eBLBaseComponents.ItemType;
 import com.github.kevinsawicki.http.HttpRequest;
 
 import io.digicore.lambda.GsonUtil;
+import io.digicore.lambda.dao.CompanyAppDao;
+import io.digicore.lambda.model.CompanyApp;
 
 public class ImportProducts {
 
@@ -53,8 +57,6 @@ public class ImportProducts {
 	}
 
 	public void importProducts() {
-
-		ApiContext context = getApiContext();
 		String apiKey = getApiKey();
 		if (dao == null)
 			dao = new ProductDao();
@@ -62,6 +64,11 @@ public class ImportProducts {
 		ProductService prodService = new ProductService();
 
 		try {
+
+			CompanyAppDao companyAppDao = new CompanyAppDao();
+			CompanyApp companyApp = companyAppDao.load("5447", "d21ee17b-c1cb-46fe-9ebb-182e27bd7075");
+			EbayToDpmService service = new EbayToDpmService(props);
+			Set<String> categoryFilter = service.getCategoryFilter(companyApp);
 
 			GetSellerListCall api = new GetSellerListCall(getApiContext());
 
@@ -90,7 +97,10 @@ public class ImportProducts {
 				HttpRequest request = HttpRequest.get(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey);
 				int code = request.code();
 
-				Product product = prodService.getBuildProductFromItem(item, COMPANY_ID, DEFAULT_FAMILY, SCHEMA, dao);
+				Product product = prodService.getBuildProductFromItem(item, COMPANY_ID, DEFAULT_FAMILY, SCHEMA, dao, categoryFilter);
+
+				if (product == null) //Product category excluded
+					continue;
 
 				if (code == HttpStatus.SC_NOT_FOUND) {
 
@@ -117,6 +127,8 @@ public class ImportProducts {
 					dao.updateProduct(product, SCHEMA, false);
 				}
 			}
+
+			System.err.println("Finished. Imported " + items.length);
 
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -151,7 +163,7 @@ public class ImportProducts {
 			AWSSimpleSystemsManagement client = AWSSimpleSystemsManagementClientBuilder.defaultClient();
 
 			GetParameterRequest pr = new GetParameterRequest();
-			pr.withName("api-key-main").setWithDecryption(true);
+			pr.withName("digicore-api-key").setWithDecryption(true);
 			GetParameterResult result = client.getParameter(pr);
 			Parameter param = result.getParameter();
 

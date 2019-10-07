@@ -25,9 +25,7 @@ public class Handler implements RequestHandler<SQSEvent, String> {
 			CoreService service = new CoreService();
 			String itemId = null;
 			for (SQSMessage msg : sqsEvent.getRecords()) {
-				//System.err.println("MESSAGE: " + msg.getBody());
-
-				System.err.println(msg.getBody());
+				System.err.println("Request received");
 				CompanyEventRo event = GsonUtil.gson.fromJson(msg.getBody(), CompanyEventRo.class);
 				itemId = service.processMessage(event);
 			}
@@ -35,7 +33,9 @@ public class Handler implements RequestHandler<SQSEvent, String> {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException(e);
+			return null;
+			//Don't throw this unless you want retries
+			//throw new RuntimeException(e);
 		}
 
 	}

@@ -46,11 +46,13 @@
 	</profiles>
 
 	<dependencies>
+	 
 		<dependency>
-			<groupId>DigiCoreLambda</groupId>
-			<artifactId>DigiCoreLambda</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<groupId>DigiCore-Java</groupId>
+			<artifactId>DigiCore-Java</artifactId>
+			<version>0.0.2</version>
 		</dependency>
+	 
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -151,44 +153,60 @@
 		</dependency>
 
 	</dependencies>
-
-	<build>
+<build>
 		<plugins>
-			<!-- Using the Apache Maven Shade plugin to package the jar "This plugin 
-				provides the capability to package the artifact in an uber-jar, including 
-				its dependencies and to shade - i.e. rename - the packages of some of the 
-				dependencies." Link: https://maven.apache.org/plugins/maven-shade-plugin/ -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.3</version>
-				<configuration>
-					<createDependencyReducedPom>false</createDependencyReducedPom>
-				</configuration>
+				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<phase>package</phase>
+						<id>copy-dependencies</id>
+						<phase>prepare-package</phase>
 						<goals>
-							<goal>shade</goal>
+							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<transformers>
-								<transformer
-									implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer">
-								</transformer>
-							</transformers>
+							<outputDirectory>${project.build.directory}/classes/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
 						</configuration>
 					</execution>
 				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>com.github.edwgiz</groupId>
-						<artifactId>maven-shade-plugin.log4j2-cachefile-transformer</artifactId>
-						<version>2.8.1</version>
-					</dependency>
-				</dependencies>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib</classpathPrefix>
+							<!-- <mainClass>test.org.Cliente</mainClass> -->
+						</manifest>
+						<manifestEntries>
+							<Class-Path>lib/</Class-Path>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			 <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>install</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
 		</plugins>
 	</build>
+
 
 </project>

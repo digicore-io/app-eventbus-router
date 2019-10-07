@@ -34,7 +34,7 @@ public class CoreService extends BaseService {
 			throw new RuntimeException("STAGE must be set in your environment variables");
 
 		if (apiKey == null)
-			apiKey = getParameter("api-key-main");
+			apiKey = getParameter("digicore-api-key");
 
 		if (props == null) {
 			try {
