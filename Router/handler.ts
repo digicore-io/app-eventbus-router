@@ -10,6 +10,8 @@ var baseService = new BaseService();
 const API = "Eventbus Router";
 const SLACK_CHANNEL = "devops-event-bus";
 
+const AWS = require("aws-sdk");
+
 export const router = async (event, context) => {
   if (event.headers) {
     //HTTP Message

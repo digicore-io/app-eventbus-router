@@ -3,7 +3,7 @@ import { EventRequest } from "../classes";
 var AWS = require("aws-sdk");
 const uuidv4 = require("uuid/v4");
 
-AWS.config.update({ region: "us-east-1" });
+//AWS.config.update();
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 export class EvendtDao {

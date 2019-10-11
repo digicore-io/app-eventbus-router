@@ -8,8 +8,7 @@ plugins:
   - serverless-webpack
   - serverless-offline
   - serverless-domain-manager
-  - serverless-add-api-key
-  
+
 custom:
   sqs:
     dev: arn:aws:sqs:us-east-1:997357843271:EventBus-Router-Queue
@@ -31,18 +30,15 @@ custom:
     prod: pending
   domain:
     domainName:
-      dev: 'dev-api.digicore.io'
-      prod: 'api.digicoretemp.de' 
-  customDomain:  
-      domainName: ${self:custom.domain.domainName.${self:provider.stage}} 
-      basePath: 'location'
-      stage: ${self:provider.stage}
-      createRoute53Record: true
-      certificateName: '*.digicoretemp.de'
-      endpointType: 'edge'
-  apiKeys:
-    - name: digicore-api-key
-
+      dev: "dev-api.digicore.io"
+      prod: "api.digicoretemp.de"
+  customDomain:
+    domainName: ${self:custom.domain.domainName.${self:provider.stage}}
+    basePath: "router-api"
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+    certificateName: "*.digicoretemp.de"
+    endpointType: "edge"
 
 provider:
   name: aws
@@ -91,5 +87,3 @@ functions:
           method: post
           cors: true
           private: false
-
- 	
