@@ -10,19 +10,22 @@ plugins:
 
 custom:
   sqs:
-    dev: arn:aws:sqs:us-west-2:951585821496:EventBusApp-SharpSpring
-    prod: https://sqs.us-west-2.amazonaws.com/211602931179/EventBusApp-SharpSpring
-  deploymentBucket:
-    dev: dpm-lambda-deployment-dev
-    prod: dpm-lambda-deployment
+    dev: apending
+    prod: arn:aws:sqs:us-east-1:912918454053:EventBusApp-SharpSpring
   role:
-    dev: arn:aws:iam::951585821496:role/Lambda
-    prod: arn:aws:iam::211602931179:role/Lambda
+    dev: arn:aws:iam::997357843271:role/Lambda
+    prod: arn:aws:iam::912918454053:role/Lambda
+  deploymentBucket:
+    dev: digicore-lambda-deployment-dev
+    prod: digicore-lambda-deployment
+  profile:
+    dev: DigiDev
+    prod: DigiProd
 
 provider:
   name: aws
   runtime: nodejs10.x
-  region: us-west-2
+  region: us-east-1
   stage: ${opt:stage,'dev'}
   deploymentBucket:
     name: ${self:custom.deploymentBucket.${self:provider.stage}}
@@ -32,7 +35,7 @@ provider:
 functions:
   App:
     handler: handler.App
-    name: EventBus-App-SharpSpring
+    name: EventBus-App-SharpSpring-${self:provider.stage}
     timeout: 30
     events:
       - sqs: ${self:custom.sqs.${self:provider.stage}}
