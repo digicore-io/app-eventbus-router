@@ -3,7 +3,7 @@ import { AppEntity } from "../interfaces";
 import { Params } from "../classes";
 const AWS = require("aws-sdk");
 
-const docClient = new AWS.DynamoDB.DocumentClient({ region: "us-east-1" });
+const docClient = new AWS.DynamoDB.DocumentClient();
 
 export class AppEntityDao {
   saveAppEntity(applicationId: string, companyId: string, entityId: string, appEntity: AppEntity) {

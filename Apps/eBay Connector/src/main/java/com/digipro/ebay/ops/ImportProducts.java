@@ -26,6 +26,7 @@ import com.ebay.sdk.TimeFilter;
 import com.ebay.sdk.call.GetSellerListCall;
 import com.ebay.soap.eBLBaseComponents.DetailLevelCodeType;
 import com.ebay.soap.eBLBaseComponents.ItemType;
+import com.ebay.soap.eBLBaseComponents.PaginationType;
 import com.github.kevinsawicki.http.HttpRequest;
 
 import io.digicore.lambda.GsonUtil;
@@ -57,78 +58,33 @@ public class ImportProducts {
 	}
 
 	public void importProducts() {
-		String apiKey = getApiKey();
-		if (dao == null)
-			dao = new ProductDao();
-
-		ProductService prodService = new ProductService();
+		CompanyAppDao companyAppDao = new CompanyAppDao();
+		CompanyApp companyApp = companyAppDao.load("5447", "d21ee17b-c1cb-46fe-9ebb-182e27bd7075");
+		EbayToDpmService service = new EbayToDpmService(props);
+		Set<String> categoryFilter = service.getCategoryFilter(companyApp);
 
 		try {
-
-			CompanyAppDao companyAppDao = new CompanyAppDao();
-			CompanyApp companyApp = companyAppDao.load("5447", "d21ee17b-c1cb-46fe-9ebb-182e27bd7075");
-			EbayToDpmService service = new EbayToDpmService(props);
-			Set<String> categoryFilter = service.getCategoryFilter(companyApp);
-
-			GetSellerListCall api = new GetSellerListCall(getApiContext());
-
 			Calendar from = Calendar.getInstance();
+			Calendar to = Calendar.getInstance();
 			from.add(Calendar.DAY_OF_YEAR, -119);
-			api.setStartTimeFilter(new TimeFilter(from, Calendar.getInstance()));
 
-			DetailLevelCodeType[] types = { DetailLevelCodeType.RETURN_ALL };
-			api.setDetailLevel(types);
+			//			getForDateRange(categoryFilter, from, to);
 
-			//			api.setPagination(new PaginationType());
-			//			api.getPagination().setEntriesPerPage(500);
-			//ItemType[] items = api.getSellerList();
-			ItemType[] items = api.getEntireSellerList();
+			from.add(Calendar.DAY_OF_YEAR, -119);
+			to.add(Calendar.DAY_OF_YEAR, -119);
+			//getForDateRange(categoryFilter, from, to);
 
-			System.err.println(items.length);
+			from.add(Calendar.DAY_OF_YEAR, -119);
+			to.add(Calendar.DAY_OF_YEAR, -119);
+			//getForDateRange(categoryFilter, from, to);
 
-			for (ItemType item : items) {
-				if (item.getTitle() == null || item.getSellingStatus() == null) {
-					//Not sure what's going on here. Could be a sandbox issue
-					System.err.println(item.getItemID() + " is skipped as it has no detail");
-					continue;
-				}
+			//			from.add(Calendar.DAY_OF_YEAR, -119);
+			//			to.add(Calendar.DAY_OF_YEAR, -119);
+			//			getForDateRange(categoryFilter, from, to);
 
-				String endpoint = String.format("applications/%s/companies/%s/entities/%s", APP_ID, COMPANY_ID, item.getItemID());
-				HttpRequest request = HttpRequest.get(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey);
-				int code = request.code();
-
-				Product product = prodService.getBuildProductFromItem(item, COMPANY_ID, DEFAULT_FAMILY, SCHEMA, dao, categoryFilter);
-
-				if (product == null) //Product category excluded
-					continue;
-
-				if (code == HttpStatus.SC_NOT_FOUND) {
-
-					product.setProductId(dao.insertProduct(product, SCHEMA, false));
-					dao.insertProductData(product, SCHEMA, false);
-					AppEntity entity = new AppEntity();
-					entity.setCompanyId(COMPANY_ID);
-					entity.setEntityId(item.getItemID());
-					entity.getData().setProductId(product.getProductId());
-
-					String responseCode = ""
-							+ HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey).send(GsonUtil.gson.toJson(entity)).code();
-
-					if (!responseCode.startsWith("2"))
-						throw new Exception(
-								String.format("Could not save entity so won't be able to update DPM product on ebay update. Company ID %s - Product ID %s - Ebay Item ID %s",
-										COMPANY_ID, product.getProductId(), item.getItemID()));
-				} else {
-					if (!String.valueOf(code).startsWith("2"))
-						throw new RuntimeException("Invalid response " + code);
-
-					EntityApiResponse response = GsonUtil.gson.fromJson(request.body(), EntityApiResponse.class);
-					product.setProductId(response.getPayload().getData().getProductId());
-					dao.updateProduct(product, SCHEMA, false);
-				}
-			}
-
-			System.err.println("Finished. Imported " + items.length);
+			from.add(Calendar.DAY_OF_YEAR, -119);
+			to.add(Calendar.DAY_OF_YEAR, -119);
+			//getForDateRange(categoryFilter, from, to);
 
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -138,6 +94,72 @@ public class ImportProducts {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void getForDateRange(Set<String> categoryFilter, Calendar from, Calendar to) throws Exception {
+		String apiKey = getApiKey();
+		if (dao == null)
+			dao = new ProductDao();
+
+		ProductService prodService = new ProductService();
+
+		GetSellerListCall api = new GetSellerListCall(getApiContext());
+
+		api.setStartTimeFilter(new TimeFilter(from, to));
+
+		DetailLevelCodeType[] types = { DetailLevelCodeType.RETURN_ALL };
+		api.setDetailLevel(types);
+
+		//			api.setPagination(new PaginationType());
+		//			api.getPagination().setEntriesPerPage(200);
+
+		//ItemType[] items = api.getSellerList();
+		ItemType[] items = api.getEntireSellerList();
+
+		System.err.println(items.length);
+
+		for (ItemType item : items) {
+			if (item.getTitle() == null || item.getSellingStatus() == null) {
+				//Not sure what's going on here. Could be a sandbox issue
+				System.err.println(item.getItemID() + " is skipped as it has no detail");
+				continue;
+			}
+
+			String endpoint = String.format("applications/%s/companies/%s/entities/%s", APP_ID, COMPANY_ID, item.getItemID());
+			HttpRequest request = HttpRequest.get(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey);
+			int code = request.code();
+
+			Product product = prodService.getBuildProductFromItem(item, COMPANY_ID, DEFAULT_FAMILY, SCHEMA, dao, categoryFilter);
+
+			if (product == null) //Product category excluded
+				continue;
+
+			if (code == HttpStatus.SC_NOT_FOUND) {
+
+				product.setProductId(dao.insertProduct(product, SCHEMA, false));
+				dao.insertProductData(product, SCHEMA, false);
+				AppEntity entity = new AppEntity();
+				entity.setCompanyId(COMPANY_ID);
+				entity.setEntityId(item.getItemID());
+				entity.getData().setProductId(product.getProductId());
+
+				String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey).send(GsonUtil.gson.toJson(entity)).code();
+
+				if (!responseCode.startsWith("2"))
+					throw new Exception(
+							String.format("Could not save entity so won't be able to update DPM product on ebay update. Company ID %s - Product ID %s - Ebay Item ID %s",
+									COMPANY_ID, product.getProductId(), item.getItemID()));
+			} else {
+				if (!String.valueOf(code).startsWith("2"))
+					throw new RuntimeException("Invalid response " + code);
+
+				EntityApiResponse response = GsonUtil.gson.fromJson(request.body(), EntityApiResponse.class);
+				product.setProductId(response.getPayload().getData().getProductId());
+				dao.updateProduct(product, SCHEMA, false);
+			}
+		}
+
+		System.err.println("Finished. Imported " + items.length);
 	}
 
 	private static ApiContext getApiContext() {

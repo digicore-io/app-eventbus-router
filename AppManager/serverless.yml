@@ -7,8 +7,10 @@ plugins:
   - serverless-domain-manager
   - serverless-api-compression
   - serverless-add-api-key
+  - serverless-aws-documentation
 
 custom:
+  version: 1
   webpack:
     includeModules:
       forceExclude:
@@ -24,23 +26,44 @@ custom:
     prod: DigiProd
   domain:
     domainName:
-      dev: 'dev-api.digicore.io'
-      prod: 'api.digicoretemp.de' 
-  customDomain:  
-      domainName: ${self:custom.domain.domainName.${self:provider.stage}} 
-      basePath: 'app-api'
-      stage: ${self:provider.stage}
-      createRoute53Record: true
-      certificateName: '*.api.digicoretemp.de'
-      endpointType: 'edge'
+      dev: "dev-api.digicoretemp.de"
+      prod: "api.digicoretemp.de"
+  customDomain:
+    domainName: ${self:custom.domain.domainName.${self:provider.stage}}
+    basePath: "app-api"
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+    certificateName: "*.api.digicoretemp.de"
+    endpointType: "edge"
   apiKeys:
     - name: digicore-api-key
+  ##### - Start Documentation ------####
+  documentation:
+    info:
+      version: "1.0.0"
+      title: "EventBus App Manager" # see note above about this being ignored
+      description: "Use this API to manage Event Bus applications and company/event subscriptions to applications. This API also allows Apps to store customer data through AppEntity"
+      termsOfService: "http://www.example.com/terms-of-service"
+      contact:
+        name: "Support"
+        url: "http://www.example.com/me"
+        email: "api-support@digicore.io"
+      license:
+        name: "Licensing"
+        url: "http://www.example.com/licensing"
+    models:
+      - name: "AppEntity"
+        description: "AppEntity is used as a data store for an App's custom data"
+        contentType: "application/json"
+        schema: ${file(models/AppEntity.json)}
+
+  ##### - End Documentation ------####
 
 provider:
   name: aws
   runtime: nodejs10.x
   stage: ${opt:stage,'dev'}
-  profile: ${self:custom.profile.${self:provider.stage}} 
+  profile: ${self:custom.profile.${self:provider.stage}}
   region: us-east-1
   stackName: app-api
   role: ${self:custom.role.${self:provider.stage}}
@@ -51,18 +74,37 @@ provider:
   environment:
     SERVICE_NAME: ${self:service}
 
-
 #TODO Add config for swagger gen
 functions:
   service:
     handler: handler.handle
-    name: EventBus-AppManager-${self:provider.stage}
+    name: EventBus-AppManager-${self:provider.stage}-v{self.custom.version}
     events:
       - http:
+          name: "Application Company App Entity"
           path: applications/{applicationId}/companies/{companyId}/entities/{entityId}
           method: get
           cors: true
-          private: true  
+          private: true
+          documentation:
+            summary: "Gets an AppEntity"
+            description: "entityId is generally and external ID. For example, this may be a productId from an external catalog system"
+            requestHeaders:
+              - name: "x-api-key"
+                description: "Your unique API key"
+            pathParams:
+              - name: "applicationId"
+                description: "ID of the application that the AppEntity belongs to"
+              - name: "companyId"
+                description: "ID of the company that the AppEntity belongs to"
+              - name: "entityId"
+                description: "ID of the the AppEntity"
+            methodResponses:
+              - statusCode: "200"
+                responseBody:
+                  description: "AppEntity Response"
+                responseModels:
+                  "application/json": "AppEntity"
       - http:
           method: put
           path: applications/{applicationId}/companies/{companyId}/entities/{entityId}
@@ -78,4 +120,3 @@ functions:
           method: get
           cors: true
           private: true
-

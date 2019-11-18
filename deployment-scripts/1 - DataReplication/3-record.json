@@ -1,0 +1,1 @@
+{"tableName": {"S": "posts"},"destinationType": {"S": "SQS"},"destinationUrl": {"S": "https://queue.amazonaws.com/997357843271/DataReplication-content-posts"}}

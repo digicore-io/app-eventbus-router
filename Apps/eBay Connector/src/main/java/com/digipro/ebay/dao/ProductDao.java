@@ -186,6 +186,7 @@ public class ProductDao {
 		stmt.setInt(13, 0);
 		stmt.execute();
 
+		System.err.println("Inserted Product");
 		ResultSet rs = stmt.getGeneratedKeys();
 		String productId = null;
 		if (rs.next())
@@ -229,6 +230,9 @@ public class ProductDao {
 		stmt.setString(10, product.getProductId());
 
 		stmt.execute();
+
+		System.err.println("Updated Product");
+
 		if (closeConnection)
 			con.close();
 

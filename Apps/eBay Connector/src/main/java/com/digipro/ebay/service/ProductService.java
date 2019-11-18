@@ -23,9 +23,13 @@ public class ProductService {
 		Product product = new Product();
 		product.setProductFamilyId(getFamilyId(categoryName, defaultFamilyId, schema, dao, companyId, categoryFilter));
 
-		if (product.getProductFamilyId() == null) //Category excluded
+		if (product.getProductFamilyId() == null) { //Category excluded
+			System.err.println("Ingoring product due to category. Title: " + item.getTitle());
 			return null;
+		}
 
+		if (item.getTitle().contains("Halyard"))
+			System.err.println("Test");
 		product.setTitle(item.getTitle());
 		product.setLocId(companyId);
 		String strRegEx = "<[^>]*>";
@@ -64,10 +68,19 @@ public class ProductService {
 		String strRegEx = "<[^>]*>";
 		Product product = new Product();
 		product.setEbayItemId(item.get("ItemID").textValue());
+		product.setTitle(item.get("Title").textValue());
 		product.setProductFamilyId(getFamilyId(categoryName, defaultFamilyId, schema, dao, companyId, categoryFilter));
-		product.setTitle(item.get("Title").textValue().replaceAll("[^a-zA-Z0-9]", ""));
+
+		if (product.getProductFamilyId() == null) { //Category excluded
+			if (product.getProductFamilyId() == null) { //Category excluded
+				System.err.println("Ingoring product due to category. Title: " + product.getTitle());
+				return null;
+			}
+			return null;
+		}
+
 		product.setDescription(item.get("Description").textValue().replaceAll(strRegEx, ""));
-		product.setSlug(product.getTitle().replace(" ", "-"));
+		product.setSlug(product.getTitle().replaceAll("[^a-zA-Z0-9]", ""));
 		product.setPrice(item.get("SellingStatus").get("CurrentPrice").get("").textValue());
 		product.setQuantity(item.get("Quantity").intValue());
 		product.setLocId(companyId);
@@ -77,7 +90,7 @@ public class ProductService {
 		if (item.get("PictureDetails").get("PictureURL") != null)
 			product.setPrimaryImage(item.get("PictureDetails").get("PictureURL").textValue());
 
-		if (item.get("Quantity").asInt() > 0)
+		if (product.getQuantity() > 0)
 			product.setStatus(1);
 		else
 			product.setStatus(0);

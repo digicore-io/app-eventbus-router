@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "AppEntity",
+  "type": "object",
+  "properties": {
+    "server": {
+      "type": "object",
+      "properties": {
+        "api": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "endpoint": { "type": "string" },
+        "executeMs": { "type": "number" }
+      }
+    },
+    "status": { "type": "number" },
+    "success": { "type": "boolean" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "companyAndEntityId": { "type": "string" },
+        "data": {
+          "type": "object",
+          "properties": {
+            "someValue1": { "type": "string" },
+            "someValue2": { "type": "string" }
+          }
+        },
+        "applicationId": { "type": "string" }
+      }
+    }
+  }
+}

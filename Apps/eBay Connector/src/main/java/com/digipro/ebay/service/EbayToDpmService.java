@@ -19,6 +19,7 @@ import io.digicore.lambda.GsonUtil;
 import io.digicore.lambda.dao.CompanyAppDao;
 import io.digicore.lambda.dao.CompanyAppEventDao;
 import io.digicore.lambda.model.CompanyApp;
+import io.digicore.lambda.model.CompanyAppEvent;
 import io.digicore.lambda.ro.CompanyEventRo;
 
 public class EbayToDpmService extends BaseService {
@@ -40,8 +41,8 @@ public class EbayToDpmService extends BaseService {
 
 			Set<String> categoryFilter = getCategoryFilter(companyApp);
 
-			CompanyAppEventDao eventDao = new CompanyAppEventDao();
-			CompanyApp companyAppEvent = eventDao.find(event.getCompanyId(), event.getEvent());
+			CompanyAppEventDao companyAppEventDao = new CompanyAppEventDao();
+			CompanyAppEvent companyAppEvent = companyAppEventDao.find(event.getCompanyId(), event.getEvent());
 			if (companyAppEvent == null)
 				throw new RuntimeException("Could not retrieve companyAppEvent. This needs to be present with db schema and productFamilyId in config");
 

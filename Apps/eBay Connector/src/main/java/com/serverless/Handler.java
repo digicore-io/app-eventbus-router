@@ -25,7 +25,9 @@ public class Handler implements RequestHandler<SQSEvent, String> {
 			CoreService service = new CoreService();
 			String itemId = null;
 			for (SQSMessage msg : sqsEvent.getRecords()) {
-				System.err.println("Request received");
+				System.err.println("Request received:\n\n");
+				System.err.println(GsonUtil.gson.toJson(msg));
+				System.err.println("\n\n--------------------");
 				CompanyEventRo event = GsonUtil.gson.fromJson(msg.getBody(), CompanyEventRo.class);
 				itemId = service.processMessage(event);
 			}
