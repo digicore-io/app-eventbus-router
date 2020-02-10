@@ -39,5 +39,8 @@ functions:
     timeout: 30
     events:
       - sqs: ${self:custom.sqs.${self:provider.stage}}
-
- 	
+      - http:
+          path: test
+          method: post
+          cors: true
+          private: false
