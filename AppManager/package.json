@@ -1,14 +1,14 @@
 {
-  "name": "digitrack",
+  "name": "api-location",
   "version": "1.0.0",
-  "description": "Digitrack Location",
+  "description": "Locations services API",
   "main": "handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jimmdd/node-oracle-layers-serverless.git"
+    "url": "git+https://github.com/digicore-io/AppEventBus.git"
   },
   "author": "Nicola Peduzzi <thenikso@gmail.com> (http://nikso.net)",
   "license": "MIT",
@@ -27,7 +27,7 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
-    "@DigiProMedia/digicore-node": "1.0.7",
+    "@digicore-io/digicore-node-common-module": "1.0.10",
     "async": "^3.0.0",
     "serverless-api-compression": "^1.0.1",
     "uuid": "^3.3.2"

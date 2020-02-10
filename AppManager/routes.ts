@@ -1,5 +1,5 @@
 import { AppEntityService } from "./service/app-entity-service";
-import { Route, HttpError } from "@DigiProMedia/digicore-node/lib/common-classes";
+import { Route, HttpError } from "@digicore-io/digicore-node-common-module/lib/common-classes";
 import { AppEntity } from "./interfaces";
 import { CompanyAppService } from "./service/company-app-service";
 const appEntityService = new AppEntityService();

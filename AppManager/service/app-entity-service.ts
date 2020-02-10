@@ -1,5 +1,5 @@
-import { HttpError } from "@DigiProMedia/digicore-node/lib/common-classes";
-import { BaseService } from "@DigiProMedia/digicore-node/lib/base-service";
+import { HttpError } from "@digicore-io/digicore-node-common-module/lib/common-classes";
+import { BaseService } from "@digicore-io/digicore-node-common-module/lib/base-service";
 import { AppEntityDao } from "../dao/app-entity-dao";
 import { AppEntity } from "../interfaces";
 const appEntityDao = new AppEntityDao();

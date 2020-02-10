@@ -1,5 +1,5 @@
-import { HttpError, Response } from "@DigiProMedia/digicore-node/lib/common-classes";
-import { BaseService } from "@DigiProMedia/digicore-node/lib/base-service";
+import { HttpError, Response } from "@digicore-io/digicore-node-common-module/lib/common-classes";
+import { BaseService } from "@digicore-io/digicore-node-common-module/lib/base-service";
 import { CompanyAppDao } from "../dao/company-app-dao";
 import { SSL_OP_NO_QUERY_MTU } from "constants";
 const companyAppDao = new CompanyAppDao();
