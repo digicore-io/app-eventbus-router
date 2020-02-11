@@ -13,8 +13,7 @@
   "author": "Nicola Peduzzi <thenikso@gmail.com> (http://nikso.net)",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^12.0.2",
-    "aws-sdk": "^2.463.0",
+    "@types/node": "^12.12.26",
     "serverless": "^1.23.0",
     "serverless-add-api-key": "^4.0.2",
     "serverless-aws-documentation": "^1.1.0",
@@ -29,6 +28,7 @@
   "dependencies": {
     "@digicore-io/digicore-node-common-module": "1.0.10",
     "async": "^3.0.0",
+    "aws-sdk": "^2.615.0",
     "serverless-api-compression": "^1.0.1",
     "uuid": "^3.3.2"
   }

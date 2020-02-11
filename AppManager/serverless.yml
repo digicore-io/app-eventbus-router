@@ -22,18 +22,18 @@ custom:
     dev: digicore-lambda-deployment-dev
     prod: digicore-lambda-deployment
   profile:
-    dev: DigiDev
-    prod: DigiProd
+    dev: DigiCoreDev
+    prod: DigiCoreProd
   domain:
     domainName:
-      dev: "dev-api.digicoretemp.de"
-      prod: "api.digicoretemp.de"
+      dev: "dev-api.digicore.io"
+      prod: "api.digicore.io"
   customDomain:
     domainName: ${self:custom.domain.domainName.${self:provider.stage}}
     basePath: "app-api"
     stage: ${self:provider.stage}
-    createRoute53Record: true
-    certificateName: "*.api.digicoretemp.de"
+    createRoute53Record: false
+    certificateName: "*.digicore.io"
     endpointType: "edge"
   apiKeys:
     - name: digicore-api-key
@@ -78,7 +78,7 @@ provider:
 functions:
   service:
     handler: handler.handle
-    name: EventBus-AppManager-${self:provider.stage}-v{self.custom.version}
+    name: EventBus-AppManager-${self:provider.stage}-v${self:custom.version}
     events:
       - http:
           name: "Application Company App Entity"
