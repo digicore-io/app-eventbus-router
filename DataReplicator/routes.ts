@@ -1,4 +1,4 @@
-import { HttpError, Route } from "@DigiProMedia/digicore-node/lib/common-classes";
+import { HttpError, Route } from "@digicore-io/digicore-node-common-module/lib/common-classes";
 
 export class Routes {
   public async handleGetRequest(event: any, route: Route) {

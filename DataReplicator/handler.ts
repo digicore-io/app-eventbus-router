@@ -1,7 +1,7 @@
 import "source-map-support/register";
 import { Router } from "./router";
-import { BaseService } from "@DigiProMedia/digicore-node/lib/base-service";
-import { AwsHttpHandler } from "@DigiProMedia/digicore-node/lib/aws-http-handler";
+import { BaseService } from "@digicore-io/digicore-node-common-module/lib/base-service";
+import { AwsHttpHandler } from "@digicore-io/digicore-node-common-module/lib/aws-http-handler";
 import { ReplicatorService } from "./service/replicator-service";
 
 var httpHandler = new AwsHttpHandler();
