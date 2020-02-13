@@ -1,7 +1,5 @@
 service:
-  name: EventBus-App
-#app: your-app-name
-#tenant: your-tenant-name
+  name: eb-app-SharpSpring
 
 # Add the serverless-webpack plugin
 plugins:
@@ -10,7 +8,7 @@ plugins:
 
 custom:
   sqs:
-    dev: apending
+    dev: arn:aws:sqs:us-east-1:997357843271:EventBusApp-SharpSpring
     prod: arn:aws:sqs:us-east-1:912918454053:EventBusApp-SharpSpring
   role:
     dev: arn:aws:iam::997357843271:role/Lambda
@@ -27,6 +25,7 @@ provider:
   runtime: nodejs10.x
   region: us-east-1
   stage: ${opt:stage,'dev'}
+  stackName: ${self:service.name}
   deploymentBucket:
     name: ${self:custom.deploymentBucket.${self:provider.stage}}
     serverSideEncryption: AES256
@@ -35,7 +34,7 @@ provider:
 functions:
   App:
     handler: handler.App
-    name: EventBus-App-SharpSpring-${self:provider.stage}
+    name: ${self:service.name}-${self:provider.stage}
     timeout: 30
     events:
       - sqs: ${self:custom.sqs.${self:provider.stage}}

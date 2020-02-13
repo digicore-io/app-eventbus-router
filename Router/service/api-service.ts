@@ -1,8 +1,8 @@
 import { EvendtDao } from "../dao/event-dao";
 import { CompanyAppEvent, EventRequest, Application } from "../classes";
-import { BaseService } from "@DigiProMedia/digicore-node/lib/base-service";
+import { BaseService } from "@digicore-io/digicore-node-common-module/lib/base-service";
 import { QueueService } from "./queue-service";
-import { HttpError, Route } from "@DigiProMedia/digicore-node/lib/common-classes";
+import { HttpError, Route } from "@digicore-io/digicore-node-common-module/lib/common-classes";
 
 const AWS = require("aws-sdk");
 
@@ -26,7 +26,13 @@ export class ApiService extends BaseService {
       this.logToSlack(
         "devops-event-bus",
         "Eventbus Router",
-        "Received external event for a company that doesn't have event configured." + " Event (" + route.queryParameters.event + ")" + " Company ID (" + route.queryParameters.companyId + ")"
+        "Received external event for a company that doesn't have event configured." +
+          " Event (" +
+          route.queryParameters.event +
+          ")" +
+          " Company ID (" +
+          route.queryParameters.companyId +
+          ")"
       );
 
     for (let appEvent of companyAppEvents) {

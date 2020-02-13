@@ -1,5 +1,5 @@
 import { ApiService } from "./service/api-service";
-import { HttpError, Route } from "@DigiProMedia/digicore-node/lib/common-classes";
+import { HttpError, Route } from "@digicore-io/digicore-node-common-module/lib/common-classes";
 const apiService = new ApiService();
 
 export class Routes {

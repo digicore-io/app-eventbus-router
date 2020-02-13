@@ -1,5 +1,5 @@
 service:
-  name: EventBus-DataMigrator
+  name: eb-DataMigrator
 #app: your-app-name
 #tenant: your-tenant-name
 
@@ -45,7 +45,7 @@ provider:
   # Facing issues with same api-key between multiple services.
   # https://github.com/serverless/serverless/issues/4664
   # https://github.com/rrahul963/serverless-add-api-key - This plugin allows sharing
-  apiName: api.eventbus-data-replicator
+  apiName: ${self:service.name}
 
   #role: ${self:custom.role.${self:provider.stage}}
   iamRoleStatements:
@@ -69,7 +69,7 @@ provider:
 functions:
   router:
     handler: handler.router
-    name: EventBus-DataReplicator-${self:provider.stage}
+    name: ${self:service.name}-${self:provider.stage}
     timeout: 30
     events:
       - sqs: ${self:custom.sqs.${self:provider.stage}}
