@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpStatus;
 
 import com.digipro.ebay.ro.AppEntity;
@@ -23,13 +24,13 @@ import io.digicore.lambda.ro.CompanyEventRo;
  *
  */
 public class CoreService extends BaseService {
-	private static String ENV = "local";
+	public static String STAGE = "local";
 	private static Properties props;
 	private static String apiKey;
 
 	public CoreService() {
 		if (System.getenv("STAGE") != null)
-			ENV = System.getenv("STAGE");
+			STAGE = System.getenv("STAGE");
 		else
 			throw new RuntimeException("STAGE must be set in your environment variables");
 
@@ -39,7 +40,7 @@ public class CoreService extends BaseService {
 		if (props == null) {
 			try {
 				props = new Properties();
-				props.load(getClass().getClassLoader().getResourceAsStream(ENV + ".properties"));
+				props.load(getClass().getClassLoader().getResourceAsStream(STAGE + ".properties"));
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -48,9 +49,11 @@ public class CoreService extends BaseService {
 
 	public String processMessage(CompanyEventRo event) {
 		if (event.getEvent().equals(com.digipro.ebay.service.Event.EXTERNAL_EBAY_PRODUCT_CHANGE.name())) {
+
 			EbayToDpmService service = new EbayToDpmService(props);
 			service.processEbayProductChange(event, apiKey);
 			return null;
+
 		} else
 			return processDpmMessage(event);
 	}
@@ -83,8 +86,7 @@ public class CoreService extends BaseService {
 					String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey).send(GsonUtil.gson.toJson(item)).code();
 
 					if (!responseCode.startsWith("2"))
-						throw new Exception(
-								String.format("Could not save response from eBay. Company ID %s - Product ID %s - Ebay Item ID %s", event.getCompanyId(), payload.getId(), itemId));
+						throw new Exception(String.format("Could not save response from eBay. Company ID %s - Product ID %s - Ebay Item ID %s", event.getCompanyId(), payload.getId(), itemId));
 				}
 
 				return itemId;
@@ -102,18 +104,15 @@ public class CoreService extends BaseService {
 			message += "\n\n" + ae.getMessage();
 			System.err.println(message);
 
-			logToSlack("devops-ebay-app", "App - eBay Connector", message);
+			logToSlack("devops-ebay-app", CoreService.STAGE, "App - eBay Connector", message);
 			log(event, message, LogStatus.ERROR);
 			throw new RuntimeException(ae);
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
 
 			String message = String.format("Exception listing/updating a product on eBay. Company ID: $s - Product ID: $s", companyId, entityId);
-			message += "\n\n" + sw.toString();
+			message += "\n\n" + ExceptionUtils.getStackTrace(e);
 
-			logToSlack("dev-ops-eventbus", "App - eBayConnector", message);
+			logToSlack(BaseService.DEV_OPS_SLACK_CHANNEL, CoreService.STAGE, "App - eBayConnector", message);
 			logError(event, e);
 			throw new RuntimeException(e);
 		}

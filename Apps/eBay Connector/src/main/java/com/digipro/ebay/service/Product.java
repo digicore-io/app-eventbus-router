@@ -16,6 +16,15 @@ public class Product {
 	private String slug;
 	private int quantity;
 	private int status;
+	private String weight;
+
+	public String getWeight() {
+		return weight;
+	}
+
+	public void setWeight(String weight) {
+		this.weight = weight;
+	}
 
 	public int getQuantity() {
 		return quantity;

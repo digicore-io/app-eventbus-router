@@ -1,18 +1,17 @@
 ﻿package com.digipro.ebay.ro.ebay;
+
 public class EbayResponse {
- GetItemResponse GetItemResponseObject;
+	GetItemResponse GetItemResponseObject;
 
+	// Getter Methods 
 
- // Getter Methods 
+	public GetItemResponse getGetItemResponse() {
+		return GetItemResponseObject;
+	}
 
- public GetItemResponse getGetItemResponse() {
-  return GetItemResponseObject;
- }
+	// Setter Methods 
 
- // Setter Methods 
-
- public void setGetItemResponse(GetItemResponse GetItemResponseObject) {
-  this.GetItemResponseObject = GetItemResponseObject;
- }
+	public void setGetItemResponse(GetItemResponse GetItemResponseObject) {
+		this.GetItemResponseObject = GetItemResponseObject;
+	}
 }
-

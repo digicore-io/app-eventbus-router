@@ -17,6 +17,7 @@ import com.amazonaws.services.simplesystemsmanagement.model.ParameterNotFoundExc
 import com.digipro.ebay.dao.ProductDao;
 import com.digipro.ebay.ro.AppEntity;
 import com.digipro.ebay.ro.api.EntityApiResponse;
+import com.digipro.ebay.service.CategoryConfig;
 import com.digipro.ebay.service.EbayToDpmService;
 import com.digipro.ebay.service.Product;
 import com.digipro.ebay.service.ProductService;
@@ -61,7 +62,7 @@ public class ImportProducts {
 		CompanyAppDao companyAppDao = new CompanyAppDao();
 		CompanyApp companyApp = companyAppDao.load("5447", "d21ee17b-c1cb-46fe-9ebb-182e27bd7075");
 		EbayToDpmService service = new EbayToDpmService(props);
-		Set<String> categoryFilter = service.getCategoryFilter(companyApp);
+		CategoryConfig config = service.getCategoryFilter(companyApp);
 
 		try {
 			Calendar from = Calendar.getInstance();
@@ -96,7 +97,7 @@ public class ImportProducts {
 		}
 	}
 
-	private void getForDateRange(Set<String> categoryFilter, Calendar from, Calendar to) throws Exception {
+	private void getForDateRange(CategoryConfig config, Calendar from, Calendar to) throws Exception {
 		String apiKey = getApiKey();
 		if (dao == null)
 			dao = new ProductDao();
@@ -129,7 +130,7 @@ public class ImportProducts {
 			HttpRequest request = HttpRequest.get(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey);
 			int code = request.code();
 
-			Product product = prodService.getBuildProductFromItem(item, COMPANY_ID, DEFAULT_FAMILY, SCHEMA, dao, categoryFilter);
+			Product product = prodService.getBuildProductFromItem(item, COMPANY_ID, DEFAULT_FAMILY, SCHEMA, dao, config);
 
 			if (product == null) //Product category excluded
 				continue;
@@ -146,9 +147,8 @@ public class ImportProducts {
 				String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey).send(GsonUtil.gson.toJson(entity)).code();
 
 				if (!responseCode.startsWith("2"))
-					throw new Exception(
-							String.format("Could not save entity so won't be able to update DPM product on ebay update. Company ID %s - Product ID %s - Ebay Item ID %s",
-									COMPANY_ID, product.getProductId(), item.getItemID()));
+					throw new Exception(String.format("Could not save entity so won't be able to update DPM product on ebay update. Company ID %s - Product ID %s - Ebay Item ID %s", COMPANY_ID, product.getProductId(),
+							item.getItemID()));
 			} else {
 				if (!String.valueOf(code).startsWith("2"))
 					throw new RuntimeException("Invalid response " + code);

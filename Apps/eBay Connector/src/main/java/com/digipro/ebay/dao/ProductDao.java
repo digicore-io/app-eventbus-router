@@ -87,8 +87,8 @@ public class ProductDao {
 		sql.append("category_type,  ");
 		sql.append("family_slug, ");
 		sql.append("family_page_title, ");
-		sql.append("org_id) ");
-		sql.append(" VALUES(?,?,?,?,?) ");
+		sql.append("org_id, parent_id) ");
+		sql.append(" VALUES(?,?,?,?,?,?) ");
 
 		PreparedStatement stmt = con.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
 		stmt.setString(1, family.getFamilyName());
@@ -96,7 +96,7 @@ public class ProductDao {
 		stmt.setString(3, family.getFamilySlug());
 		stmt.setString(4, family.getPageTitle());
 		stmt.setInt(5, family.getOrgId());
-
+		stmt.setString(6, family.getParentId());
 		stmt.execute();
 
 		ResultSet rs = stmt.getGeneratedKeys();
@@ -122,8 +122,9 @@ public class ProductDao {
 		sql.append("mpn, ");
 		sql.append("minimum_qty, ");
 		sql.append("sort_order, ");
-		sql.append("status) ");
-		sql.append("VALUES (?,?,?,?,?,?) ");
+		sql.append("status, ");
+		sql.append("weight) ");
+		sql.append("VALUES (?,?,?,?,?,?,?) ");
 
 		PreparedStatement stmt = con.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
 		stmt.setString(1, product.getProductId());
@@ -131,7 +132,8 @@ public class ProductDao {
 		stmt.setString(3, "0");
 		stmt.setString(4, "1");
 		stmt.setString(5, "0");
-		stmt.setString(6, "1");
+		stmt.setInt(6, product.getStatus());
+		stmt.setString(7, product.getWeight());
 
 		stmt.execute();
 
@@ -214,7 +216,7 @@ public class ProductDao {
 		sql.append("locID = ?, ");
 		sql.append("product_image = ?, ");
 		sql.append("product_image_alt = ?, ");
-		sql.append("status = ? ");
+		sql.append("status = ?, family_id = ? ");
 		sql.append(" WHERE product_id = ? ");
 
 		PreparedStatement stmt = con.prepareStatement(sql.toString());
@@ -227,7 +229,8 @@ public class ProductDao {
 		stmt.setString(7, product.getPrimaryImage());
 		stmt.setString(8, product.getPrimaryImageAlt());
 		stmt.setInt(9, product.getStatus());
-		stmt.setString(10, product.getProductId());
+		stmt.setString(10, product.getProductFamilyId());
+		stmt.setString(11, product.getProductId());
 
 		stmt.execute();
 
@@ -236,6 +239,40 @@ public class ProductDao {
 		if (closeConnection)
 			con.close();
 
+	}
+
+	public String updateProductData(Product product, String schema, boolean closeConnection) throws Exception {
+
+		getConnection();
+
+		StringBuffer sql = new StringBuffer();
+		sql.append("UPDATE ");
+		sql.append(schema);
+		sql.append(".ip_product_data SET ");
+		sql.append("location = ?, ");
+		sql.append("mpn = ?, ");
+		sql.append("minimum_qty = ?, ");
+		sql.append("sort_order = ?, ");
+		sql.append("status = ?, ");
+		sql.append("weight = ? ");
+		sql.append("WHERE product_id = ? ");
+
+		PreparedStatement stmt = con.prepareStatement(sql.toString());
+
+		stmt.setString(1, product.getLocId());
+		stmt.setString(2, "0");
+		stmt.setString(3, "1");
+		stmt.setString(4, "0");
+		stmt.setInt(5, product.getStatus());
+		stmt.setString(6, product.getWeight());
+		stmt.setString(7, product.getProductId());
+
+		stmt.execute();
+
+		if (closeConnection)
+			con.close();
+
+		return product.getProductId();
 	}
 
 	private Connection getConnection() {

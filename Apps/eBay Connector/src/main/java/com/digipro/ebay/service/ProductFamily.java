@@ -7,6 +7,15 @@ public class ProductFamily {
 	private String familySlug;
 	private int orgId;
 	private String pageTitle;
+	private String parentId;
+
+	public String getParentId() {
+		return parentId;
+	}
+
+	public void setParentId(String parentId) {
+		this.parentId = parentId;
+	}
 
 	public int getFamilyId() {
 		return familyId;

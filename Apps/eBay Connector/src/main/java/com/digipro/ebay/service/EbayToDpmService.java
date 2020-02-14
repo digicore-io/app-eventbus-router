@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpStatus;
 
 import com.digipro.ebay.dao.ProductDao;
@@ -32,6 +33,8 @@ public class EbayToDpmService extends BaseService {
 
 	public void processEbayProductChange(CompanyEventRo event, String apiKey) {
 
+		EntityApiResponse response = null;
+
 		try {
 			CompanyAppDao companyAppDao = new CompanyAppDao();
 			CompanyApp companyApp = companyAppDao.load(event.getCompanyId(), event.getApplicationId());
@@ -39,7 +42,7 @@ public class EbayToDpmService extends BaseService {
 			if (companyApp == null)
 				throw new RuntimeException("Could not retrieve companyApp. This needs to be present");
 
-			Set<String> categoryFilter = getCategoryFilter(companyApp);
+			CategoryConfig catConfig = getCategoryFilter(companyApp);
 
 			CompanyAppEventDao companyAppEventDao = new CompanyAppEventDao();
 			CompanyAppEvent companyAppEvent = companyAppEventDao.find(event.getCompanyId(), event.getEvent());
@@ -57,7 +60,7 @@ public class EbayToDpmService extends BaseService {
 			ProductDao dao = new ProductDao();
 			String defaultFamilyId = config.get("defaultFamilyId").getAsString();
 			ProductService prodService = new ProductService();
-			Product product = prodService.getProductFromItemXML(event.getPayload().getAsString(), event.getCompanyId(), defaultFamilyId, schema, dao, categoryFilter);
+			Product product = prodService.getProductFromItemXML(event.getPayload().getAsString(), event.getCompanyId(), defaultFamilyId, schema, dao, catConfig);
 
 			//Check if this is an insert or update
 			String endpoint = String.format("applications/%s/companies/%s/entities/%s", event.getApplicationId(), event.getCompanyId(), product.getEbayItemId());
@@ -76,46 +79,58 @@ public class EbayToDpmService extends BaseService {
 				String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey).send(GsonUtil.gson.toJson(entity)).code();
 
 				if (!responseCode.startsWith("2"))
-					throw new Exception(
-							String.format("Could not save entity so won't be able to update DPM product on ebay update. Company ID %s - Product ID %s - Ebay Item ID %s",
-									event.getCompanyId(), productId, product.getEbayItemId()));
+					throw new Exception(String.format("Could not save entity so won't be able to update DPM product on ebay update. Company ID %s - Product ID %s - Ebay Item ID %s", event.getCompanyId(), productId,
+							product.getEbayItemId()));
 
-				logToSlack("devops-ebay-app", "Ebay Connector", "Inserted new product in DPM from eBay. Product ID: " + productId);
+				logToSlack("devops-ebay-app", CoreService.STAGE, "Ebay Connector", "Inserted new product in DPM from eBay. Product ID: " + productId);
 
 			} else {
 				if (!String.valueOf(code).startsWith("2"))
-					throw new Exception("Invalid response from App Manager");
+					throw new Exception("Invalid response from App Manager - Response Code: " + code);
 
-				EntityApiResponse response = GsonUtil.gson.fromJson(request.body(), EntityApiResponse.class);
+				response = GsonUtil.gson.fromJson(request.body(), EntityApiResponse.class);
 				product.setProductId(response.getPayload().getData().getProductId());
-				dao.updateProduct(product, schema, true);
+				dao.updateProduct(product, schema, false);
+				dao.updateProductData(product, schema, true);
 
-				logToSlack("devops-ebay-app", "Ebay Connector", "Updated product in DPM from eBay. Product ID: " + response.getPayload().getData().getProductId());
+				logToSlack("devops-ebay-app", CoreService.STAGE, "Ebay Connector", "Updated product in DPM from eBay. Product ID: " + response.getPayload().getData().getProductId());
 			}
 		} catch (Exception e) {
+
+			String message = null;
+			if (response != null)
+				message = String.format("Exception listing/updating a product on eBay. Company ID: %s - eBay Item ID: $s", event.getCompanyId(), response.getPayload().getData().getItemId());
+			else
+				message = String.format("Exception listing/updating a product  on eBay. Company ID: %s - Payload %s", event.getCompanyId(), e.getMessage() + "\n\n" + event.getPayload().getAsString());
+
+			message += "\n\n" + ExceptionUtils.getStackTrace(e);
+
+			logToSlack(BaseService.DEV_OPS_SLACK_CHANNEL, CoreService.STAGE, "App - eBayConnector", message);
+			logError(event, e);
 			throw new RuntimeException(e);
 		}
 	}
 
-	public Set<String> getCategoryFilter(CompanyApp companyApp) {
-		//Set<String> catFilter = new HashSet<>();
-		//		catFilter.add("Healthcare, Lab & Dental");
-		//		catFilter.add("Medical & Mobility");
-		//		catFilter.add("Health Care");
-		//		return catFilter;
+	public CategoryConfig getCategoryFilter(CompanyApp companyApp) {
 		if (companyApp.getConfig() == null)
 			return null;
 
+		CategoryConfig config = new CategoryConfig();
 		JsonObject filter = GsonUtil.gson.fromJson(companyApp.getConfig(), JsonObject.class);
 		if (filter.get("categoryFilter") == null)
 			return null;
+
+		if (filter.get("categoryLevel") != null)
+			config.setCategoryLevel(filter.get("categoryLevel").getAsInt());
 
 		Set<String> catFilter = new HashSet<>();
 		JsonArray array = filter.get("categoryFilter").getAsJsonArray();
 		for (int i = 0; i < array.size(); i++)
 			catFilter.add(array.get(i).getAsString());
 
-		return catFilter;
+		config.setCategoryFilter(catFilter);
+
+		return config;
 	}
 
 }
