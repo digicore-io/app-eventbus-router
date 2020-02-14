@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpStatus;
 
@@ -82,7 +83,9 @@ public class EbayToDpmService extends BaseService {
 					throw new Exception(String.format("Could not save entity so won't be able to update DPM product on ebay update. Company ID %s - Product ID %s - Ebay Item ID %s", event.getCompanyId(), productId,
 							product.getEbayItemId()));
 
-				logToSlack("devops-ebay-app", CoreService.STAGE, "Ebay Connector", "Inserted new product in DPM from eBay. Product ID: " + productId);
+				logToSlack("devops-ebay-app", CoreService.STAGE, "Ebay Connector",
+						String.format("INSERTED product in DPM from eBay:\n\nCompany ID: %s\nDPM Product ID: %s\neBay Item ID: %s\nTitle: %s\neBay Qty: %s\nDB Schema: %s", event.getCompanyId(), product.getProductId(),
+								product.getEbayItemId(), StringUtils.trim(product.getTitle()), product.getQuantity(), GsonUtil.gson.fromJson(companyAppEvent.getConfig(), JsonObject.class).get("schema").getAsString()));
 
 			} else {
 				if (!String.valueOf(code).startsWith("2"))
@@ -92,14 +95,15 @@ public class EbayToDpmService extends BaseService {
 				product.setProductId(response.getPayload().getData().getProductId());
 				dao.updateProduct(product, schema, false);
 				dao.updateProductData(product, schema, true);
-
-				logToSlack("devops-ebay-app", CoreService.STAGE, "Ebay Connector", "Updated product in DPM from eBay. Product ID: " + response.getPayload().getData().getProductId());
+				logToSlack("devops-ebay-app", CoreService.STAGE, "Ebay Connector",
+						String.format("UPDATED product in DPM from eBay:\n\nCompany ID: %s\nDPM Product ID: %s\neBay Item ID: %s\nTitle: %s\neBay Qty: %s\nDB Schema: %s", event.getCompanyId(), product.getProductId(),
+								product.getEbayItemId(), StringUtils.trim(product.getTitle()), product.getQuantity(), GsonUtil.gson.fromJson(companyAppEvent.getConfig(), JsonObject.class).get("schema").getAsString()));
 			}
 		} catch (Exception e) {
 
 			String message = null;
 			if (response != null)
-				message = String.format("Exception listing/updating a product on eBay. Company ID: %s - eBay Item ID: $s", event.getCompanyId(), response.getPayload().getData().getItemId());
+				message = String.format("Exception listing/updating a product on eBay. Company ID: %s - eBay Item ID: %s", event.getCompanyId(), response.getPayload().getData().getItemId());
 			else
 				message = String.format("Exception listing/updating a product  on eBay. Company ID: %s - Payload %s", event.getCompanyId(), e.getMessage() + "\n\n" + event.getPayload().getAsString());
 
