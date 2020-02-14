@@ -7,6 +7,10 @@ plugins:
   - serverless-offline
 
 custom:
+  webpack:
+    includeModules:
+      forceExclude:
+        - node_modules/aws-sdk
   sqs:
     dev: arn:aws:sqs:us-east-1:997357843271:EventBusApp-SharpSpring
     prod: arn:aws:sqs:us-east-1:912918454053:EventBusApp-SharpSpring

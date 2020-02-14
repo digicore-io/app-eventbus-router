@@ -36,8 +36,9 @@ export class ApiService extends BaseService {
       );
 
     for (let appEvent of companyAppEvents) {
-      console.log(appEvent.applicationId + " " + route.queryParameters.applicationId);
+      console.log("Handling request for " + appEvent.applicationId + " " + route.queryParameters.applicationId);
       if (appEvent.applicationId == route.queryParameters.applicationId) await this.handleRequest(event, appEvent, route);
+      else console.log("Application IDs don't match");
     }
   }
 
