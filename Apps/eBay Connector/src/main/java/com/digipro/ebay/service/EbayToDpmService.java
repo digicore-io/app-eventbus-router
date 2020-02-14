@@ -83,7 +83,7 @@ public class EbayToDpmService extends BaseService {
 					throw new Exception(String.format("Could not save entity so won't be able to update DPM product on ebay update. Company ID %s - Product ID %s - Ebay Item ID %s", event.getCompanyId(), productId,
 							product.getEbayItemId()));
 
-				logToSlack("devops-ebay-app", CoreService.STAGE, "Ebay Connector",
+				logToSlack("devops-ebay-app", CoreService.STAGE.toUpperCase(), "Ebay Connector",
 						String.format("INSERTED product in DPM from eBay:\n\nCompany ID: %s\nDPM Product ID: %s\neBay Item ID: %s\nTitle: %s\neBay Qty: %s\nDB Schema: %s", event.getCompanyId(), product.getProductId(),
 								product.getEbayItemId(), StringUtils.trim(product.getTitle()), product.getQuantity(), GsonUtil.gson.fromJson(companyAppEvent.getConfig(), JsonObject.class).get("schema").getAsString()));
 
@@ -95,7 +95,7 @@ public class EbayToDpmService extends BaseService {
 				product.setProductId(response.getPayload().getData().getProductId());
 				dao.updateProduct(product, schema, false);
 				dao.updateProductData(product, schema, true);
-				logToSlack("devops-ebay-app", CoreService.STAGE, "Ebay Connector",
+				logToSlack("devops-ebay-app", CoreService.STAGE.toUpperCase(), "Ebay Connector",
 						String.format("UPDATED product in DPM from eBay:\n\nCompany ID: %s\nDPM Product ID: %s\neBay Item ID: %s\nTitle: %s\neBay Qty: %s\nDB Schema: %s", event.getCompanyId(), product.getProductId(),
 								product.getEbayItemId(), StringUtils.trim(product.getTitle()), product.getQuantity(), GsonUtil.gson.fromJson(companyAppEvent.getConfig(), JsonObject.class).get("schema").getAsString()));
 			}
