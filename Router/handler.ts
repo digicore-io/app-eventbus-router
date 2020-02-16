@@ -14,10 +14,10 @@ const AWS = require("aws-sdk");
 
 export const router = async (event, context) => {
   if (event.headers) {
-    //HTTP Message
-    return httpHandler.handle(event, context, new Router(), API, SLACK_CHANNEL);
+    //HTTP Message (3rd Party Webhook)
+    return await httpHandler.handle(event, context, new Router(), API, SLACK_CHANNEL);
   } else {
-    //SQS Message
+    //SQS Message (Internal Use)
     try {
       await queueService.processMessages(event);
     } catch (err) {

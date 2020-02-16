@@ -21,9 +21,10 @@ export class QueueService {
       return;
     }
 
-    console.log("Received event. Event " + eventRequest.event + " + companyId " + eventRequest.companyId);
+    console.log("Received event. Event " + eventRequest.event + " - companyId " + eventRequest.companyId + " - applicationId " + eventRequest.applicationId);
     let appEvents: any = await eventDao.getCompanyAppEvents(eventRequest.companyId, eventRequest.event);
 
+    console.log("Found " + appEvents.length + " appEvents");
     //Company may have multiple apps registered for the same event
     for (let appEvent of appEvents) {
       try {
@@ -53,6 +54,7 @@ export class QueueService {
   async sendSQS(eventRequest: EventRequest, appEvent: CompanyAppEvent, app: Application) {
     return new Promise(async function(resolve, reject) {
       eventRequest.companyAppEventId = appEvent.id;
+      eventRequest.applicationId = appEvent.applicationId;
 
       var params = {
         MessageBody: JSON.stringify(eventRequest),

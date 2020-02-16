@@ -47,7 +47,7 @@ export class ApiService extends BaseService {
     if (appEvent.authToken != route.queryParameters.token) throw new HttpError(400, "Forbidden");
 
     let eventRequest: EventRequest = new EventRequest();
-    eventRequest.applicationId = route.queryParameters.applicationId;
+    eventRequest.applicationId = appEvent.applicationId;
     eventRequest.companyAppEventId = appEvent.id;
     eventRequest.companyId = route.queryParameters.companyId;
     eventRequest.event = route.queryParameters.event;
