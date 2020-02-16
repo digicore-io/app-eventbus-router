@@ -36,6 +36,7 @@ public class EbayToDpmService extends BaseService {
 
 		EntityApiResponse response = null;
 
+		System.err.println("Processing Event from Ebay. Event: " + event.getEvent() + "\n\nPayload:\n" + GsonUtil.gson.toJson(event.getPayload()));
 		try {
 			CompanyAppDao companyAppDao = new CompanyAppDao();
 			CompanyApp companyApp = companyAppDao.load(event.getCompanyId(), event.getApplicationId());
@@ -63,6 +64,7 @@ public class EbayToDpmService extends BaseService {
 			ProductService prodService = new ProductService();
 			Product product = prodService.getProductFromItemXML(event.getPayload().getAsString(), event.getCompanyId(), defaultFamilyId, schema, dao, catConfig);
 
+			System.err.println("XML to JSON from eBay: " + GsonUtil.gson.toJson(product));
 			//Check if this is an insert or update
 			String endpoint = String.format("applications/%s/companies/%s/entities/%s", event.getApplicationId(), event.getCompanyId(), product.getEbayItemId());
 			HttpRequest request = HttpRequest.get(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey);

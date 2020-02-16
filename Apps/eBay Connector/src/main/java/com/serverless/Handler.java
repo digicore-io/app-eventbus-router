@@ -34,8 +34,9 @@ public class Handler implements RequestHandler<SQSEvent, String> {
 			return itemId;
 
 		} catch (Exception e) {
+			System.err.println("EXITING WITHOUT EXCEPTION");
 			e.printStackTrace();
-			return null;
+			return "ERROR OCCURRED";
 			//Don't throw this unless you want retries
 			//throw new RuntimeException(e);
 		}

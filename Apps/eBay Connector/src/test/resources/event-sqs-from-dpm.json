@@ -1,9 +1,9 @@
-{"companyId":"5555","event":"ECOM_PRODUCT_UPDATED","applicationId":"d21ee17b-c1cb-46fe-9ebb-182e27bd7075","payload":
+{"companyId":"5447","event":"ECOM_PRODUCT_PURCHASED","applicationId":"d21ee17b-c1cb-46fe-9ebb-182e27bd7075","payload":
             	{
-            	"id":"1569947579993",
+            	"id":"1607",
 				"familyId":"",
 				"sku":"SKU857345111121",
-				"name":"Test 1569947579993",
+				"name":"Test Product Dev - Qty Update - v1",
 				"description":"This is a test product from the API - Long description",
 				"shortDescription":"This is a test product from the API - Long description",
 				"slug":"",
@@ -28,26 +28,19 @@
 				"timeZone":"",
 				"postEventId":"",
 				"showSharing":"",
-				"qty":"7",
+				"qty":"10",
 				"minPurchaseQty":"1",
 				"maxPurchaseQty":"2",
 				"cartBtnLabel":"",
 				"featured":0,
 				"recurring":"",
-				"recurringFrequency":"",
+	 			"recurringFrequency":"",
 				"recurringStartDay":"",
 				"status":1,
 				"enableFreeShipping":1,
 				"visibleWeb":1,
 				"visibleVirtual":1,
-				"images":["https://ik.imagekit.io/yi7qlqdvr/tr:h-744,w-600//a/p/app007600-1.jpg"],
-				
-				"ebayPublish":true,
-				"ebayProductLocation":"Pensacola",
-				"ebayPaymentPolicyId":"6065700000",
-				"ebayFulfillmentPolicyId":"6065706000",
-				"ebayReturnPolicyId":"6065708000",
-				"ebayCategoryId":"162140"
+				"images":["https://ik.imagekit.io/yi7qlqdvr/tr:h-744,w-600//a/p/app007600-1.jpg"]
             	},
             "companyAppEventId":"78f9a93e-953a-423b-b45e-9e6679fe0de1"
 }

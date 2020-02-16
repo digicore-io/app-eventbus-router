@@ -12,6 +12,8 @@ import com.ebay.soap.eBLBaseComponents.ItemType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
+import io.digicore.lambda.GsonUtil;
+
 public class ProductService {
 
 	static Map<String, String> familyIdMap = new HashMap<String, String>();
@@ -65,6 +67,8 @@ public class ProductService {
 		JsonNode jsonNode = xmlMapper.readTree(xml.getBytes());
 		JsonNode item = jsonNode.get("Item");
 
+		System.err.println("\n\neBay JSON:\n\n" + GsonUtil.gson.toJson(item));
+
 		String categoryName = item.get("PrimaryCategory").get("CategoryName").textValue();
 
 		String strRegEx = "<[^>]*>";
@@ -84,7 +88,9 @@ public class ProductService {
 		product.setDescription(item.get("Description").textValue().replaceAll(strRegEx, ""));
 		product.setSlug(product.getTitle().replaceAll("[^a-zA-Z0-9]", ""));
 		product.setPrice(item.get("SellingStatus").get("CurrentPrice").get("").textValue());
-		product.setQuantity(Integer.parseInt(item.get("Quantity").asText()));
+
+		//eBay's Quantity field displays an aggregate of available & sold. So to get the true SOH is the following
+		product.setQuantity(item.get("Quantity").asInt() - item.get("SellingStatus").get("QuantitySold").asInt() - item.get("SellingStatus").get("QuantitySoldByPickupInStore").asInt());
 		product.setLocId(companyId);
 		product.setPrimaryImageAlt(product.getTitle());
 		product.setCreated(Calendar.getInstance());

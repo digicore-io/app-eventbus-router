@@ -109,11 +109,11 @@
 										<CurrentPrice currencyID="USD">50.99</CurrentPrice>
 										<LeadCount>0</LeadCount>
 										<MinimumToBid currencyID="USD">50.99</MinimumToBid>
-										<QuantitySold>0</QuantitySold>
+										<QuantitySold>2</QuantitySold>
 										<ReserveMet>true</ReserveMet>
 										<SecondChanceEligible>false</SecondChanceEligible>
 										<ListingStatus>Active</ListingStatus>
-										<QuantitySoldByPickupInStore>0</QuantitySoldByPickupInStore>
+										<QuantitySoldByPickupInStore>1</QuantitySoldByPickupInStore>
 								</SellingStatus>
 								<ShippingDetails>
 										<ApplyShippingDiscount>false</ApplyShippingDiscount>

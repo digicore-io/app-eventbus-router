@@ -15,6 +15,8 @@ import com.github.kevinsawicki.http.HttpRequest;
 
 import io.digicore.lambda.BaseService;
 import io.digicore.lambda.GsonUtil;
+import io.digicore.lambda.dao.CompanyAppDao;
+import io.digicore.lambda.model.CompanyApp;
 import io.digicore.lambda.model.LogStatus;
 import io.digicore.lambda.ro.CompanyEventRo;
 
@@ -72,9 +74,13 @@ public class CoreService extends BaseService {
 		int code = request.code();
 
 		try {
+			CompanyAppDao dao = new CompanyAppDao();
+			System.err.println(GsonUtil.gson.toJson(event));
+			CompanyApp companyApp = dao.load(event.getCompanyId(), event.getApplicationId());
+
 			DpmToEbayService service = new DpmToEbayService(props);
 			if (code == HttpStatus.SC_NOT_FOUND) {
-				String itemId = service.createProductListing(event, payload);
+				String itemId = service.createProductListing(event, payload, companyApp);
 
 				if (itemId != null) { //Product not created due to status=0
 
@@ -93,7 +99,7 @@ public class CoreService extends BaseService {
 
 			} else if (code == HttpStatus.SC_OK) {
 				EntityApiResponse response = GsonUtil.gson.fromJson(request.body(), EntityApiResponse.class);
-				service.updateProductListing(response.getPayload().getData().getItemId(), event, payload);
+				service.updateStockOnHand(response.getPayload().getData().getItemId(), event, payload, companyApp);
 				return response.getPayload().getData().getItemId();
 			} else
 				throw new Exception("Unexpected response code from Api App Manager: " + code);
