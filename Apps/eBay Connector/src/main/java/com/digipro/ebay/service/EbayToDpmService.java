@@ -63,6 +63,8 @@ public class EbayToDpmService extends BaseService {
 			String defaultFamilyId = config.get("defaultFamilyId").getAsString();
 			ProductService prodService = new ProductService();
 			Product product = prodService.getProductFromItemXML(event.getPayload().getAsString(), event.getCompanyId(), defaultFamilyId, schema, dao, catConfig);
+			if (product == null)
+				throw new RuntimeException("Could not create product from Item XML. Item Payload " + event.getPayload().getAsString());
 
 			System.err.println("XML to JSON from eBay: " + GsonUtil.gson.toJson(product));
 			//Check if this is an insert or update
@@ -76,8 +78,8 @@ public class EbayToDpmService extends BaseService {
 
 				AppEntity entity = new AppEntity();
 				entity.setCompanyId(event.getCompanyId());
-				entity.setEntityId(product.getEbayItemId());
-				entity.getData().setProductId(productId);
+				entity.setInternalEntityId(productId);
+				entity.setExternalEntityId(product.getEbayItemId());
 
 				String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey).send(GsonUtil.gson.toJson(entity)).code();
 
@@ -94,7 +96,7 @@ public class EbayToDpmService extends BaseService {
 					throw new Exception("Invalid response from App Manager - Response Code: " + code);
 
 				response = GsonUtil.gson.fromJson(request.body(), EntityApiResponse.class);
-				product.setProductId(response.getPayload().getData().getProductId());
+				product.setProductId(response.getPayload().getInternalEntityId());
 				dao.updateProduct(product, schema, false);
 				dao.updateProductData(product, schema, true);
 				logToSlack("devops-ebay-app", CoreService.STAGE.toUpperCase(), "Ebay Connector",
@@ -105,7 +107,7 @@ public class EbayToDpmService extends BaseService {
 
 			String message = null;
 			if (response != null)
-				message = String.format("Exception listing/updating a product on eBay. Company ID: %s - eBay Item ID: %s", event.getCompanyId(), response.getPayload().getData().getItemId());
+				message = String.format("Exception listing/updating a product on eBay. Company ID: %s - eBay Item ID: %s", event.getCompanyId(), response.getPayload().getExternalEntityId());
 			else
 				message = String.format("Exception listing/updating a product  on eBay. Company ID: %s - Payload %s", event.getCompanyId(), e.getMessage() + "\n\n" + event.getPayload().getAsString());
 

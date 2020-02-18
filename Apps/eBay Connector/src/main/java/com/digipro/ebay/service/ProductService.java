@@ -11,6 +11,7 @@ import com.digipro.ebay.dao.ProductDao;
 import com.ebay.soap.eBLBaseComponents.ItemType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.google.gson.JsonObject;
 
 import io.digicore.lambda.GsonUtil;
 
@@ -23,6 +24,9 @@ public class ProductService {
 		String categoryName = null;
 		if (item.getPrimaryCategory() != null)
 			categoryName = item.getPrimaryCategory().getCategoryName();
+
+		//TEST
+		config.setCategoryLevel(2);
 
 		Product product = new Product();
 		product.setProductFamilyId(getFamilyId(categoryName, defaultFamilyId, schema, dao, companyId, config));
@@ -44,7 +48,7 @@ public class ProductService {
 		product.setPrice(String.valueOf(item.getSellingStatus().getCurrentPrice().getValue()));
 		product.setQuantity(item.getQuantity());
 		product.setSlug(product.getTitle().replaceAll("[^a-zA-Z0-9]", ""));
-
+		product.setWeight(getWeightIfAvailable(item));
 		product.setPrimaryImageAlt(item.getTitle());
 		if (item.getPictureDetails() != null && item.getPictureDetails().getPictureURLLength() > 0)
 			product.setPrimaryImage(item.getPictureDetails().getPictureURL()[0]);
@@ -59,6 +63,9 @@ public class ProductService {
 		return product;
 	}
 
+	/**
+	 * TODO Should be able to consolidate this with above by converting it to Product bean and then both pass product into a method that calls family and other common stuff
+	 */
 	public Product getProductFromItemXML(String xml, String companyId, String defaultFamilyId, String schema, ProductDao dao, CategoryConfig config) throws Exception {
 		XmlMapper xmlMapper = new XmlMapper();
 		xml = xml.substring(xml.indexOf("<soapenv:Body>") + 14, xml.length());
@@ -107,6 +114,79 @@ public class ProductService {
 
 		return product;
 
+	}
+
+	private String getFamilyId(String eBayCategory, String defaultFamilyId, String schema, ProductDao dao, String companyId, CategoryConfig config) throws Exception {
+
+		/**
+		 * TBC: Do we want to do this or should we just allow all categories?
+		 */
+		if (config.getCategoryFilter().size() == 0)
+			return defaultFamilyId;
+
+		String parentFamilyId = "0";
+		String finalFamilyId = null;
+		for (String filter : config.getCategoryFilter()) {
+			if (eBayCategory.contains(filter))
+				finalFamilyId = createCategories(eBayCategory, filter, schema, dao, companyId, config, parentFamilyId, 1);
+		}
+
+		if (finalFamilyId == null)
+			return null;
+		else if (finalFamilyId.equals("0"))
+			return defaultFamilyId;
+		else
+			return defaultFamilyId + "," + finalFamilyId;
+
+	}
+
+	private String createCategories(String eBayCategory, String filter, String schema, ProductDao dao, String companyId, CategoryConfig config, String familyId, int depth) throws Exception {
+
+		if (depth > config.getCategoryLevel())
+			return familyId;
+
+		String categoryPart = null;
+
+		if (depth == 1)
+			categoryPart = eBayCategory.substring(eBayCategory.indexOf(filter), eBayCategory.indexOf(filter) + filter.length());
+		else {
+			if (eBayCategory.contains(":"))
+				categoryPart = eBayCategory.substring(0, eBayCategory.indexOf(":"));
+			else
+				categoryPart = eBayCategory;
+		}
+
+		System.err.println(categoryPart);
+
+		if (categoryPart.trim().equals(""))
+			return familyId;
+
+		if (!familyIdMap.containsKey(categoryPart)) {
+
+			String existingFamilyId = dao.selectFamilyId(categoryPart, schema);
+
+			if (existingFamilyId == null) {
+				ProductFamily pf = new ProductFamily();
+				pf.setOrgId(Integer.parseInt(companyId));
+				pf.setFamilyName(categoryPart.replace(":", "-"));
+				pf.setFamilySlug(categoryPart.replaceAll("[^a-zA-Z0-9]", "").replace(" ", "-") + "/");
+				pf.setPageTitle(categoryPart);
+				pf.setCategory("store");
+				pf.setParentId(familyId);
+				familyId = dao.insertFamily(pf, schema);
+			} else
+				familyId = existingFamilyId;
+
+			familyIdMap.put(categoryPart, familyId);
+		} else
+			familyId = familyIdMap.get(categoryPart);
+
+		int index = eBayCategory.indexOf(categoryPart);
+		eBayCategory = eBayCategory.substring(index + categoryPart.length(), eBayCategory.length());
+		if (eBayCategory.startsWith(":"))
+			eBayCategory = eBayCategory.replaceFirst(":", "");
+
+		return createCategories(eBayCategory, filter, schema, dao, companyId, config, familyId, ++depth);
 	}
 
 	/**
@@ -164,69 +244,108 @@ public class ProductService {
 	}
 
 	/**
-	 * Returns null if there is not category or if there is a categoryFilter and it doesn't match. Calling code then ignores this product
+	 * TODO: Hack to clean up
+	 * @param item
+	 * @return
 	 */
-	private String getFamilyId(String categories, String defaultFamilyId, String schema, ProductDao dao, String companyId, CategoryConfig config) throws Exception {
+	private String getWeightIfAvailable(ItemType item) {
+		String weight = null;
+		try {
+			if (item.getShippingPackageDetails() == null)
+				return null;
 
-		if (config.getCategoryFilter().size() == 0)
-			return defaultFamilyId;
+			//First check ShippingDetails.CalculatedShippingRate
+			weight = item.getShippingPackageDetails().getWeightMajor().getValue().toString();
+			if (!"0".equals(weight))
+				weight += " " + item.getShippingPackageDetails().getWeightMajor().getUnit();
+			else
+				weight = null;
 
-		if (categories != null) {
-			String finalFamilyId = null;
-			for (String categoryFilter : config.getCategoryFilter()) {
-				if (!categories.contains(categoryFilter)) {
-					if (finalFamilyId != null)
-						return defaultFamilyId + "," + finalFamilyId;
-					else
-						return defaultFamilyId;
-				}
+			if (!"0".equals(item.getShippingPackageDetails().getWeightMinor().getValue().toString())) {
+				if (weight != null)
+					weight += " ";
+				else
+					weight = "";
 
-				if (!config.getCategoryFilter().contains(categoryFilter))
-					continue;
-
-				String parentFamilyId = "0";
-				String category = categories.substring(categories.indexOf(categoryFilter), categoryFilter.length());
-
-				for (int i = 0; i < config.getCategoryLevel(); i++) {
-					String familyId = dao.selectFamilyId(category.replace(":", "-"), schema);
-
-					if (familyId == null) {
-						//category = category.replace(":", "-");
-						ProductFamily pf = new ProductFamily();
-						pf.setOrgId(Integer.parseInt(companyId));
-						pf.setFamilyName(category.replace(":", "-"));
-						pf.setFamilySlug(category.replaceAll("[^a-zA-Z0-9]", "").replace(" ", "-") + "/");
-						pf.setPageTitle(category);
-						pf.setCategory("store");
-						pf.setParentId(parentFamilyId);
-						familyId = dao.insertFamily(pf, schema);
-					}
-
-					finalFamilyId = familyId;
-					parentFamilyId = familyId;
-					//categories = categories.resubstring(category.indexOf(":") + 1, categories.length());
-					categories = categories.replace(category, "");//(category.indexOf(":") + 1, categories.length());
-					if (categories.startsWith(":"))
-						categories = categories.replaceFirst(":", "");
-
-					if (categories.indexOf(":") > 0)
-						category = categories.substring(0, categories.indexOf(":"));
-					else
-						category = categories;
-
-					if (StringUtils.isEmpty(category))
-						break;
-
-					System.err.println(categories);
-					System.err.println(category);
-				}
+				weight += item.getShippingPackageDetails().getWeightMinor().getValue().toString() + item.getShippingPackageDetails().getWeightMinor().getUnit();
 
 			}
 
-			return defaultFamilyId + "," + finalFamilyId;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Could not get weight from field");
 		}
-
-		return null;
+		return weight;
 	}
+
+	//	/**
+	//	 * Returns null if there is not category or if there is a categoryFilter and it doesn't match. Calling code then ignores this product
+	//	 */
+	//	private String getFamilyIdOldMethod(String categories, String defaultFamilyId, String schema, ProductDao dao, String companyId, CategoryConfig config) throws Exception {
+	//
+	//		if (config.getCategoryFilter().size() == 0)
+	//			return defaultFamilyId;
+	//
+	//		if (categories != null) {
+	//			System.err.println("eBay Cat: " + categories);
+	//			String finalFamilyId = null;
+	//			for (String categoryFilter : config.getCategoryFilter()) {
+	//				if (!categories.contains(categoryFilter)) {
+	//					if (finalFamilyId != null)
+	//						return defaultFamilyId + "," + finalFamilyId;
+	//					//					else
+	//					//						return defaultFamilyId;
+	//				}
+	//
+	//				if (!categories.contains(categoryFilter))
+	//					continue;
+	//
+	//				//Business & Industrial:Healthcare, Lab & Dental:Other Healthcare, Lab & Dental
+	//				String parentFamilyId = "0";
+	//				String category = categories.substring(categories.indexOf(categoryFilter), categories.indexOf(categoryFilter) + categoryFilter.length());
+	//
+	//				for (int i = 0; i < config.getCategoryLevel(); i++) {
+	//					String familyId = dao.selectFamilyId(category.replace(":", "-"), schema);
+	//
+	//					if (familyId == null) {
+	//						//category = category.replace(":", "-");
+	//						ProductFamily pf = new ProductFamily();
+	//						pf.setOrgId(Integer.parseInt(companyId));
+	//						pf.setFamilyName(category.replace(":", "-"));
+	//						pf.setFamilySlug(category.replaceAll("[^a-zA-Z0-9]", "").replace(" ", "-") + "/");
+	//						pf.setPageTitle(category);
+	//						pf.setCategory("store");
+	//						pf.setParentId(parentFamilyId);
+	//						familyId = dao.insertFamily(pf, schema);
+	//					}
+	//
+	//					finalFamilyId = familyId;
+	//					parentFamilyId = familyId;
+	//					//categories = categories.resubstring(category.indexOf(":") + 1, categories.length());
+	//					//categories = categories.replace(category, "");//(category.indexOf(":") + 1, categories.length());
+	//					categories = categories.replace(category, "");//(category.indexOf(":") + 1, categories.length());
+	//
+	//					if (categories.startsWith(":"))
+	//						categories = categories.replaceFirst(":", "");
+	//
+	//					if (categories.indexOf(":") > 0)
+	//						category = categories.substring(0, categories.indexOf(":"));
+	//					else
+	//						category = categories;
+	//
+	//					if (StringUtils.isEmpty(category))
+	//						break;
+	//
+	//					//					System.err.println(categories);
+	//					//					System.err.println(category);
+	//				}
+	//
+	//			}
+	//
+	//			return defaultFamilyId + "," + finalFamilyId;
+	//		}
+	//
+	//		return null;
+	//	}
 
 }

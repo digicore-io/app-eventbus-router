@@ -56,7 +56,7 @@ import com.ebay.soap.eBLBaseComponents.StorefrontType;
  *
  * http://cgi.sandbox.ebay.com/ws/eBayISAPI.dll?ViewItem&item=110509987479&ssPageName=STRK:MESELX:IT&_trksid=p3984.m1555.l2649#ht_500wt_1156
  */
-public class ListItem {
+public class ListTestItem {
 
 	// sample category ids supporting custom item specifics
 	private static Set<String> sampleCatIDSet = new HashSet<String>();

@@ -1,30 +1,19 @@
 package com.digipro.ebay.ro;
 
+import com.digipro.ebay.ro.api.Data;
+
 public class AppEntity {
+	private String applicationId;
 	private String companyId;
-	private String entityId;
-	private Data data = new Data();
+	private String internalEntityId;
+	private String externalEntityId;
 
-	public class Data {
-		String itemId; //EbayID set if doing DPM -> Ebay
-		String productId; //DPM ID set if doing Ebay -> DPM
+	public String getApplicationId() {
+		return applicationId;
+	}
 
-		public String getProductId() {
-			return productId;
-		}
-
-		public void setProductId(String productId) {
-			this.productId = productId;
-		}
-
-		public String getItemId() {
-			return itemId;
-		}
-
-		public void setItemId(String itemId) {
-			this.itemId = itemId;
-		}
-
+	public void setApplicationId(String applicationId) {
+		this.applicationId = applicationId;
 	}
 
 	public String getCompanyId() {
@@ -35,20 +24,20 @@ public class AppEntity {
 		this.companyId = companyId;
 	}
 
-	public String getEntityId() {
-		return entityId;
+	public String getInternalEntityId() {
+		return internalEntityId;
 	}
 
-	public void setEntityId(String entityId) {
-		this.entityId = entityId;
+	public void setInternalEntityId(String internalEntityId) {
+		this.internalEntityId = internalEntityId;
 	}
 
-	public Data getData() {
-		return data;
+	public String getExternalEntityId() {
+		return externalEntityId;
 	}
 
-	public void setData(Data data) {
-		this.data = data;
+	public void setExternalEntityId(String externalEntityId) {
+		this.externalEntityId = externalEntityId;
 	}
 
 }

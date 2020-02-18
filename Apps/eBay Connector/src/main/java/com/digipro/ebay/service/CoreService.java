@@ -86,8 +86,8 @@ public class CoreService extends BaseService {
 
 					AppEntity item = new AppEntity();
 					item.setCompanyId(event.getCompanyId());
-					item.setEntityId(payload.getId());
-					item.getData().setItemId(itemId);
+					item.setInternalEntityId(payload.getId());
+					item.setExternalEntityId(itemId);
 
 					String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey).send(GsonUtil.gson.toJson(item)).code();
 
@@ -99,8 +99,8 @@ public class CoreService extends BaseService {
 
 			} else if (code == HttpStatus.SC_OK) {
 				EntityApiResponse response = GsonUtil.gson.fromJson(request.body(), EntityApiResponse.class);
-				service.updateStockOnHand(response.getPayload().getData().getItemId(), event, payload, companyApp);
-				return response.getPayload().getData().getItemId();
+				service.updateStockOnHand(response.getPayload().getExternalEntityId(), event, payload, companyApp);
+				return response.getPayload().getExternalEntityId();
 			} else
 				throw new Exception("Unexpected response code from Api App Manager: " + code);
 
