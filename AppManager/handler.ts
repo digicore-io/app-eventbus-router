@@ -4,6 +4,7 @@ import { AwsHttpHandler } from "@digicore-io/digicore-node-common-module/lib/aws
 let httpHandler = new AwsHttpHandler();
 const API = "EventBus App Manager";
 const SLACK_CHANNEL = "devops-event-bus";
+const STAGE = process.env == null ? "local" : process.env;
 
 export const handle = async (event, context: any) => {
   let router = new Router();

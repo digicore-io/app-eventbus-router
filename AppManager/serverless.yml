@@ -8,7 +8,7 @@ plugins:
   - serverless-domain-manager
   - serverless-api-compression
   - serverless-add-api-key
-  - serverless-aws-documentation
+  #- serverless-aws-documentation
 
 custom:
   version: 1
@@ -74,6 +74,7 @@ provider:
   apiName: ${self:service.name}
   environment:
     SERVICE_NAME: ${self:service}
+    STAGE: ${opt:stage,'dev'}
 
 #TODO Add config for swagger gen
 functions:
@@ -82,35 +83,60 @@ functions:
     name: ${self:service.name}-${self:provider.stage}
     events:
       - http:
-          name: "Application Company App Entity"
-          path: applications/{applicationId}/companies/{companyId}/entities/{entityId}
+          #name: "Application Company App Entity"
+          path: applications/{applicationId}/companies/{companyId}/entities/{digicoreEntityId}
           method: get
           cors: true
           private: true
-          documentation:
-            summary: "Gets an AppEntity"
-            description: "entityId is generally and external ID. For example, this may be a productId from an external catalog system"
-            requestHeaders:
-              - name: "x-api-key"
-                description: "Your unique API key"
-            pathParams:
-              - name: "applicationId"
-                description: "ID of the application that the AppEntity belongs to"
-              - name: "companyId"
-                description: "ID of the company that the AppEntity belongs to"
-              - name: "entityId"
-                description: "ID of the the AppEntity"
-            methodResponses:
-              - statusCode: "200"
-                responseBody:
-                  description: "AppEntity Response"
-                responseModels:
-                  "application/json": "AppEntity"
+          # documentation:
+          #   summary: "Gets an AppEntity"
+          #   description: "digicoreEntityId is the internal DigiCore Entity ID. #For example, this may be a productId from an external catalog system"
+          #   requestHeaders:
+          #     - name: "x-api-key"
+          #       description: "Your unique API key"
+          #   pathParams:
+          #     - name: "applicationId"
+          #       description: "ID of the application that the AppEntity belongs to"
+          #     - name: "companyId"
+          #       description: "ID of the company that the AppEntity belongs to"
+          #     - name: "internalEntityId"
+          #       description: "ID of the the AppEntity"
+          #   methodResponses:
+          #     - statusCode: "200"
+          #       responseBody:
+          #         description: "AppEntity Response"
+          #       responseModels:
+          #         "application/json": "AppEntity"
       - http:
           method: put
-          path: applications/{applicationId}/companies/{companyId}/entities/{entityId}
+          path: applications/{applicationId}/companies/{companyId}/entities/{digicoreEntityId}
           cors: true
           private: true
+      - http:
+          #name: "Application Company App Entity by External ID"
+          path: applications/{applicationId}/companies/{companyId}/entities/external/{externalEntityId}
+          method: get
+          cors: true
+          private: true
+          # documentation:
+          #   summary: "Gets an AppEntity using the externalEntityId. I.e. a Product ID from an external catalog System"
+          #   description: "internalEntityId is the internal DigiCore Entity ID. #For example, this may be a productId from an external catalog system"
+          #   requestHeaders:
+          #     - name: "x-api-key"
+          #       description: "Your unique API key"
+          #   pathParams:
+          #     - name: "applicationId"
+          #       description: "ID of the application that the AppEntity belongs to"
+          #     - name: "companyId"
+          #       description: "ID of the company that the AppEntity belongs to"
+          #     - name: "externalEntityId"
+          #       description: "External ID of the AppEntity"
+          #   methodResponses:
+          #     - statusCode: "200"
+          #       responseBody:
+          #         description: "AppEntity Response"
+          #       responseModels:
+          #         "application/json": "AppEntity"
       - http:
           method: put
           path: applications/{applicationId}/companies/{companyId}

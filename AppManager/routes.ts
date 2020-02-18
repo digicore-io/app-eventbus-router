@@ -8,8 +8,11 @@ const companyAppService = new CompanyAppService();
 export class Routes {
   public async handleGetRequest(event: any, route: Route) {
     switch (route.resource) {
-      case "/applications/{applicationId}/companies/{companyId}/entities/{entityId}": {
-        return appEntityService.getAppEntity(route.pathParameters.applicationId, route.pathParameters.companyId, route.pathParameters.entityId);
+      case "/applications/{applicationId}/companies/{companyId}/entities/{digicoreEntityId}": {
+        return await appEntityService.getAppEntity(route.pathParameters.applicationId, route.pathParameters.companyId, route.pathParameters.digicoreEntityId);
+      }
+      case "/applications/{applicationId}/companies/{companyId}/entities/external/{externalEntityId}": {
+        return appEntityService.getAppEntityByExternalId(route.pathParameters.applicationId, route.pathParameters.companyId, route.pathParameters.externalEntityId);
       }
       case "/companies/{companyId}/applications": {
         return companyAppService.getApplications(route.pathParameters.companyId, route.queryParameters.event);
@@ -34,8 +37,8 @@ export class Routes {
   public async handlePutRequest(event: any, route: Route) {
     let jsonObject: any = JSON.parse(event.body);
     switch (route.resource) {
-      case "/applications/{applicationId}/companies/{companyId}/entities/{entityId}": {
-        await appEntityService.saveAppEntity(route.pathParameters.applicationId, route.pathParameters.companyId, route.pathParameters.entityId, <AppEntity>jsonObject);
+      case "/applications/{applicationId}/companies/{companyId}/entities/{digicoreEntityId}": {
+        await appEntityService.saveAppEntity(route.pathParameters.applicationId, route.pathParameters.companyId, route.pathParameters.digicoreEntityId, <AppEntity>jsonObject);
         break;
       }
       case "/applications/{applicationId}/companies/{companyId}": {

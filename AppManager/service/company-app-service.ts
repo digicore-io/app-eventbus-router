@@ -15,7 +15,7 @@ export class CompanyAppService extends BaseService {
     if (!event) throw new HttpError(400, "Parameter event is required");
 
     let events: any = await companyAppDao.getCompanyAppEvents(companyId, event).catch(function(error) {
-      console.log(error);
+      console.log("ERROR: ", error);
       throw error;
     });
 
@@ -31,7 +31,7 @@ export class CompanyAppService extends BaseService {
     if (!applicationId) throw new HttpError(400, "Parameter applicationId is required");
 
     await companyAppDao.saveCompanyApp(applicationId, companyId, config).catch(function(error) {
-      console.log(error);
+      console.log("ERROR: ", error);
       throw error;
     });
   }

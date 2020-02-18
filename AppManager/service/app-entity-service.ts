@@ -9,28 +9,41 @@ export class AppEntityService extends BaseService {
     super();
   }
 
-  public async saveAppEntity(applicationId: string, companyId: string, entityId: string, appEntity: AppEntity) {
+  public async saveAppEntity(applicationId: string, companyId: string, digicoreEntityId: string, appEntity: AppEntity) {
     if (!applicationId) throw new HttpError(400, "Parameter applicationId is required");
 
     if (!companyId) throw new HttpError(400, "Parameter companyId is required");
 
-    if (!entityId) throw new HttpError(400, "Parameter entityId is required");
+    if (!digicoreEntityId) throw new HttpError(400, "Parameter internalEntityId is required");
 
-    return await appEntityDao.saveAppEntity(applicationId, companyId, entityId, appEntity).catch(function(error) {
+    return await appEntityDao.saveAppEntity(applicationId, companyId, digicoreEntityId, appEntity).catch(function(error) {
       throw error;
     });
   }
 
-  public async getAppEntity(applicationId: string, companyId: string, entityId: string) {
-    //this.logToSlack("devops-event-bus", "test", "test");
-
+  public async getAppEntity(applicationId: string, companyId: string, digicoreEntityId: string) {
     if (!applicationId) throw new HttpError(400, "Parameter applicationId is required");
 
     if (!companyId) throw new HttpError(400, "Parameter companyId is required");
 
-    if (!entityId) throw new HttpError(400, "Parameter entityId is required");
+    if (!digicoreEntityId) throw new HttpError(400, "Parameter internalEntityId is required");
 
-    let appEntity: AppEntity = <AppEntity>await appEntityDao.getAppEntity(applicationId, companyId, entityId).catch(function(error) {
+    let appEntity: AppEntity = <AppEntity>await appEntityDao.getAppEntity(applicationId, companyId, digicoreEntityId).catch(function(error) {
+      console.log(error);
+      throw error;
+    });
+
+    return appEntity;
+  }
+
+  public async getAppEntityByExternalId(applicationId: string, companyId: string, externalEntityId: string) {
+    if (!applicationId) throw new HttpError(400, "Parameter applicationId is required");
+
+    if (!companyId) throw new HttpError(400, "Parameter companyId is required");
+
+    if (!externalEntityId) throw new HttpError(400, "Parameter externalEntityId is required");
+
+    let appEntity: AppEntity = <AppEntity>await appEntityDao.getAppEntityByExternalId(applicationId, companyId, externalEntityId).catch(function(error) {
       console.log(error);
       throw error;
     });
