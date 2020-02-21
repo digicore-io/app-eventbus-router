@@ -47,7 +47,7 @@ public class ImportProducts {
 	public ImportProducts() {
 		props = new Properties();
 		try {
-			props.load(getClass().getClassLoader().getResourceAsStream("prod.properties"));
+			props.load(getClass().getClassLoader().getResourceAsStream("dev.properties"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -146,7 +146,7 @@ public class ImportProducts {
 				//eBay -> DMD Entity Lookup
 				AppEntity entity = new AppEntity();
 				entity.setCompanyId(COMPANY_ID);
-				entity.setInternalEntityId(product.getProductId());
+				entity.setDigicoreEntityId(product.getProductId());
 				entity.setExternalEntityId(item.getItemID());
 
 				String putEndpoint = String.format("applications/%s/companies/%s/entities/%s", APP_ID, COMPANY_ID, product.getProductId());

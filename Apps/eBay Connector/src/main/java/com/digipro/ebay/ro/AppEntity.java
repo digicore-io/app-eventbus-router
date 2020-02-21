@@ -5,7 +5,7 @@ import com.digipro.ebay.ro.api.Data;
 public class AppEntity {
 	private String applicationId;
 	private String companyId;
-	private String internalEntityId;
+	private String digicoreEntityId;
 	private String externalEntityId;
 
 	public String getApplicationId() {
@@ -24,12 +24,12 @@ public class AppEntity {
 		this.companyId = companyId;
 	}
 
-	public String getInternalEntityId() {
-		return internalEntityId;
+	public String getDigicoreEntityId() {
+		return digicoreEntityId;
 	}
 
-	public void setInternalEntityId(String internalEntityId) {
-		this.internalEntityId = internalEntityId;
+	public void setDigicoreEntityId(String digicoreEntityId) {
+		this.digicoreEntityId = digicoreEntityId;
 	}
 
 	public String getExternalEntityId() {

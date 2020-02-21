@@ -86,7 +86,7 @@ public class CoreService extends BaseService {
 
 					AppEntity item = new AppEntity();
 					item.setCompanyId(event.getCompanyId());
-					item.setInternalEntityId(payload.getId());
+					item.setDigicoreEntityId(payload.getId());
 					item.setExternalEntityId(itemId);
 
 					String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey).send(GsonUtil.gson.toJson(item)).code();

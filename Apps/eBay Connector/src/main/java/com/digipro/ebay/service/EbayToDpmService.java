@@ -62,9 +62,14 @@ public class EbayToDpmService extends BaseService {
 			ProductDao dao = new ProductDao();
 			String defaultFamilyId = config.get("defaultFamilyId").getAsString();
 			ProductService prodService = new ProductService();
-			Product product = prodService.getProductFromItemXML(event.getPayload().getAsString(), event.getCompanyId(), defaultFamilyId, schema, dao, catConfig);
-			if (product == null)
-				throw new RuntimeException("Could not create product from Item XML. Item Payload " + event.getPayload().getAsString());
+			Product product = null;
+
+			try {
+				product = prodService.getProductFromItemXML(event.getPayload().getAsString(), event.getCompanyId(), defaultFamilyId, schema, dao, catConfig);
+			} catch (UnsupportedCategoryException e) {
+				System.err.println(e.getMessage());
+				return;
+			}
 
 			System.err.println("XML to JSON from eBay: " + GsonUtil.gson.toJson(product));
 			//Check if this is an insert or update
@@ -78,7 +83,7 @@ public class EbayToDpmService extends BaseService {
 
 				AppEntity entity = new AppEntity();
 				entity.setCompanyId(event.getCompanyId());
-				entity.setInternalEntityId(productId);
+				entity.setDigicoreEntityId(productId);
 				entity.setExternalEntityId(product.getEbayItemId());
 
 				String responseCode = "" + HttpRequest.put(props.getProperty("APP_MANAGER_URL") + endpoint).header("x-api-key", apiKey).send(GsonUtil.gson.toJson(entity)).code();
@@ -113,6 +118,7 @@ public class EbayToDpmService extends BaseService {
 
 			message += "\n\n" + ExceptionUtils.getStackTrace(e);
 
+			e.printStackTrace();
 			logToSlack(BaseService.DEV_OPS_SLACK_CHANNEL, CoreService.STAGE, "App - eBayConnector", message);
 			logError(event, e);
 			throw new RuntimeException(e);

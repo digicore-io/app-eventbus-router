@@ -1,12 +1,19 @@
 package com.digipro.ebay.service;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.digipro.ebay.dao.ProductDao;
 import com.ebay.soap.eBLBaseComponents.ItemType;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -66,7 +73,10 @@ public class ProductService {
 	/**
 	 * TODO Should be able to consolidate this with above by converting it to Product bean and then both pass product into a method that calls family and other common stuff
 	 */
-	public Product getProductFromItemXML(String xml, String companyId, String defaultFamilyId, String schema, ProductDao dao, CategoryConfig config) throws Exception {
+	public Product getProductFromItemXML(String xml, String companyId, String defaultFamilyId, String schema, ProductDao dao, CategoryConfig config) throws UnsupportedCategoryException, Exception {
+
+		saveXmlToS3(xml);
+
 		XmlMapper xmlMapper = new XmlMapper();
 		xml = xml.substring(xml.indexOf("<soapenv:Body>") + 14, xml.length());
 		xml = xml.substring(0, xml.indexOf("</soapenv:Body>"));
@@ -85,11 +95,7 @@ public class ProductService {
 		product.setProductFamilyId(getFamilyId(categoryName, defaultFamilyId, schema, dao, companyId, config));
 
 		if (product.getProductFamilyId() == null) { //Category excluded
-			if (product.getProductFamilyId() == null) { //Category excluded
-				System.err.println("Ingoring product due to category. Title: " + product.getTitle());
-				return null;
-			}
-			return null;
+			throw new UnsupportedCategoryException(String.format("Item not included in category filter. Item ID %s : Title: %s ", product.getEbayItemId(), product.getTitle()));
 		}
 
 		product.setDescription(item.get("Description").textValue().replaceAll(strRegEx, ""));
@@ -114,6 +120,41 @@ public class ProductService {
 
 		return product;
 
+	}
+
+	/**
+	 * This was put in place due to not being able to parse some of the XMLs that eBay send us. 
+	 * Manually search the xml for ItemID to name the file while uploading
+	 *  
+	 * @param xml
+	 */
+	protected void saveXmlToS3(String xml) {
+		String itemId = null;
+		try {
+			itemId = xml.substring(xml.indexOf("<ItemID>") + 8, xml.indexOf("</ItemID>"));
+			String fileName = itemId + "-" + Calendar.getInstance().getTimeInMillis() + ".xml";
+
+			System.err.println("Uploading to S3 devops bucket: " + fileName);
+			String stage = System.getenv("STAGE");
+			if (stage == null || stage.equals("local"))
+				stage = "dev";
+
+			File tmpFolder = new File("/tmp");
+			if (!tmpFolder.isDirectory())
+				tmpFolder.mkdir();
+
+			File xmlFile = new File(tmpFolder.getAbsolutePath() + File.separator + fileName);
+			FileUtils.write(xmlFile, xml, "UTF-8");
+
+			AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
+			PutObjectRequest request = new PutObjectRequest("devops-digicore.io-" + stage, "event-bus/apps/eBayConnector/" + fileName, xmlFile);
+			s3Client.putObject(request);
+
+			System.err.println("Uploaded to S3 devops bucket: " + fileName);
+
+		} catch (Exception e) {
+			throw new RuntimeException("Could not save XML to S3. Item ID: " + itemId, e);
+		}
 	}
 
 	private String getFamilyId(String eBayCategory, String defaultFamilyId, String schema, ProductDao dao, String companyId, CategoryConfig config) throws Exception {
