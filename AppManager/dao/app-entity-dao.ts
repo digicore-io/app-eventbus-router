@@ -10,7 +10,7 @@ export class AppEntityDao {
    *
    * @param applicationId
    * @param companyId
-   * @param internalEntityId (DMD Entity ID)
+   * @param digicoreEntityId (DMD Entity ID)
    * @param appEntity
    */
   saveAppEntity(applicationId: string, companyId: string, digicoreEntityId: string, appEntity: AppEntity) {

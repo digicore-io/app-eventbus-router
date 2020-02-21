@@ -14,7 +14,7 @@ export class AppEntityService extends BaseService {
 
     if (!companyId) throw new HttpError(400, "Parameter companyId is required");
 
-    if (!digicoreEntityId) throw new HttpError(400, "Parameter internalEntityId is required");
+    if (!digicoreEntityId) throw new HttpError(400, "Parameter digicoreEntityId is required");
 
     return await appEntityDao.saveAppEntity(applicationId, companyId, digicoreEntityId, appEntity).catch(function(error) {
       throw error;
