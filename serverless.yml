@@ -53,7 +53,8 @@ provider:
   # https://github.com/serverless/serverless/issues/4664
   # https://github.com/rrahul963/serverless-add-api-key - This plugin allows sharing
   apiName: ${self:service.name}
-
+  environment:
+    STAGE: ${opt:stage,'dev'}
   #role: ${self:custom.role.${self:provider.stage}}
   iamRoleStatements:
   #   - Effect: Allow
