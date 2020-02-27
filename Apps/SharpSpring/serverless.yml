@@ -1,0 +1,51 @@
+service:
+  name: eb-app-SharpSpring
+
+# Add the serverless-webpack plugin
+plugins:
+  - serverless-webpack
+  - serverless-offline
+
+custom:
+  webpack:
+    includeModules:
+      forceExclude:
+        - node_modules/aws-sdk
+  sqs:
+    dev: arn:aws:sqs:us-east-1:997357843271:EventBusApp-SharpSpring
+    prod: arn:aws:sqs:us-east-1:912918454053:EventBusApp-SharpSpring
+  role:
+    dev: arn:aws:iam::997357843271:role/Lambda
+    prod: arn:aws:iam::912918454053:role/Lambda
+  deploymentBucket:
+    dev: digicore-lambda-deployment-dev
+    prod: digicore-lambda-deployment
+  profile:
+    dev: DigiDev
+    prod: DigiProd
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  region: us-east-1
+  stage: ${opt:stage,'dev'}
+  stackName: ${self:service.name}
+  deploymentBucket:
+    name: ${self:custom.deploymentBucket.${self:provider.stage}}
+    serverSideEncryption: AES256
+  role: ${self:custom.role.${self:provider.stage}}
+  environment:
+    STAGE: ${opt:stage,'dev'}
+
+functions:
+  App:
+    handler: handler.App
+    name: ${self:service.name}-${self:provider.stage}
+    timeout: 30
+    events:
+      - sqs: ${self:custom.sqs.${self:provider.stage}}
+      - http:
+          path: test
+          method: post
+          cors: true
+          private: false

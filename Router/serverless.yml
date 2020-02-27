@@ -1,0 +1,87 @@
+service:
+  name: eb-Router
+
+# Add the serverless-webpack plugin
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-domain-manager
+
+custom:
+  sqs:
+    dev: arn:aws:sqs:us-east-1:997357843271:EventBus-Router-Queue
+    prod: arn:aws:sqs:us-east-1:912918454053:EventBus-RoutingQueue
+  role:
+    dev: arn:aws:iam::997357843271:role/Lambda
+    prod: arn:aws:iam::912918454053:role/Lambda
+  deploymentBucket:
+    dev: digicore-lambda-deployment-dev
+    prod: digicore-lambda-deployment
+  tableApplication:
+    dev: arn:aws:dynamodb:us-east-1:997357843271:table/eventbus-application
+    prod: pending
+  tableCompanyAppEvent:
+    dev: arn:aws:dynamodb:us-east-1:997357843271:table/eventbus-companyAppEvent
+    prod: pending
+  tableEventLog:
+    dev: arn:aws:dynamodb:us-east-1:997357843271:table/eventbus-eventLog
+    prod: pending
+  domain:
+    domainName:
+      dev: "dev-api.digicore.io"
+      prod: "api.digicore.io"
+  customDomain:
+    domainName: ${self:custom.domain.domainName.${self:provider.stage}}
+    basePath: ${self:service.name}
+    stage: ${self:provider.stage}
+    createRoute53Record: false
+    certificateName: "*.digicore.io"
+    endpointType: "edge"
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  region: us-east-1
+  stage: ${opt:stage,'dev'}
+  role: ${self:custom.role.${self:provider.stage}}
+  deploymentBucket:
+    name: ${self:custom.deploymentBucket.${self:provider.stage}}
+    serverSideEncryption: AES256
+  # apiKeys:
+  #   - api-key
+  # Facing issues with same api-key between multiple services.
+  # https://github.com/serverless/serverless/issues/4664
+  # https://github.com/rrahul963/serverless-add-api-key - This plugin allows sharing
+  apiName: ${self:service.name}
+
+  #role: ${self:custom.role.${self:provider.stage}}
+  iamRoleStatements:
+  #   - Effect: Allow
+  #     Action:
+  #       - dynamodb:*
+  #     Resource: ${self:custom.tableApplication.${self:provider.stage}}
+  #   - Effect: Allow
+  #     Action:
+  #       - dynamodb:*
+  #     Resource: ${self:custom.tableCompanyAppEvent.${self:provider.stage}}
+  #   - Effect: Allow
+  #     Action:
+  #       - dynamodb:*
+  #     Resource: ${self:custom.tableEventLog.${self:provider.stage}}
+  #   - Effect: Allow
+  #     Action:
+  #       - sqs:*
+  #     Resource: ${self:custom.sqs.${self:provider.stage}}
+
+functions:
+  router:
+    handler: handler.router
+    name: ${self:service.name}-${self:provider.stage}
+    timeout: 30
+    events:
+      - sqs: ${self:custom.sqs.${self:provider.stage}}
+      - http:
+          path: event
+          method: post
+          cors: true
+          private: false

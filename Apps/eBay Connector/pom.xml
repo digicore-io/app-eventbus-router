@@ -1,0 +1,258 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		<modelVersion>4.0.0</modelVersion>
+
+		<groupId>com.digipro</groupId>
+		<artifactId>ebay-connector</artifactId>
+		<packaging>jar</packaging>
+		<version>dev</version>
+		<name>ebay-connector</name>
+
+		<properties>
+				<maven.compiler.source>1.8</maven.compiler.source>
+				<maven.compiler.target>1.8</maven.compiler.target>
+				<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		</properties>
+		<profiles>
+				<profile>
+						<id>eclipse</id>
+						<dependencies>
+								<dependency>
+										<groupId>org.junit.jupiter</groupId>
+										<artifactId>junit-jupiter-engine</artifactId>
+								</dependency>
+								<dependency>
+										<groupId>org.junit.platform</groupId>
+										<artifactId>junit-platform-launcher</artifactId>
+								</dependency>
+						</dependencies>
+						<dependencyManagement>
+								<dependencies>
+
+
+										<dependency>
+												<groupId>org.junit.jupiter</groupId>
+												<artifactId>junit-jupiter-engine</artifactId>
+												<version>5.4.0</version>
+												<scope>test</scope>
+										</dependency>
+										<dependency>
+												<groupId>org.junit.platform</groupId>
+												<artifactId>junit-platform-launcher</artifactId>
+												<version>1.1.1</version>
+												<scope>test</scope>
+										</dependency>
+								</dependencies>
+						</dependencyManagement>
+				</profile>
+		</profiles>
+
+
+
+		<dependencies>
+
+				<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+				<dependency>
+						<groupId>commons-io</groupId>
+						<artifactId>commons-io</artifactId>
+						<version>2.6</version>
+				</dependency>
+				<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sqs -->
+				<dependency>
+						<groupId>com.amazonaws</groupId>
+						<artifactId>aws-java-sdk-sqs</artifactId>
+						<version>1.11.723</version>
+				</dependency>
+
+
+				<!-- <dependency> <groupId>com.amazonaws</groupId> <artifactId>aws-java-sdk</artifactId> <version>1.11.354</version> <scope>test</scope> </dependency> -->				<!-- ebay sdk core -->
+				<dependency>
+						<groupId>com.ebay</groupId>
+						<artifactId>ebaysdkcore</artifactId>
+						<version>1027</version>
+				</dependency>
+				<!-- ebay sdk calls -->
+				<dependency>
+						<groupId>com.ebay</groupId>
+						<artifactId>ebaycalls</artifactId>
+						<version>1027</version>
+				</dependency>
+				<!-- ebay sdk helper -->
+				<dependency>
+						<groupId>com.ebay</groupId>
+						<artifactId>helper</artifactId>
+						<version>1027</version>
+				</dependency>
+				<dependency>
+						<groupId>digicore.io</groupId>
+						<artifactId>DigiCore-Java-Common-Module</artifactId>
+						<version>0.0.6</version>
+				</dependency>
+
+				<dependency>
+						<groupId>xalan</groupId>
+						<artifactId>xalan</artifactId>
+						<version>2.7.2</version>
+				</dependency>
+
+				<dependency>
+						<groupId>mysql</groupId>
+						<artifactId>mysql-connector-java</artifactId>
+						<version>5.1.41</version>
+				</dependency>
+
+				<dependency>
+						<groupId>com.amazonaws</groupId>
+						<artifactId>aws-java-sdk-ssm</artifactId>
+						<version>1.11.602</version>
+				</dependency>
+
+				<dependency>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-log4j12</artifactId>
+						<version>1.7.26</version>
+				</dependency>
+				<dependency>
+						<groupId>com.amazonaws</groupId>
+						<artifactId>aws-lambda-java-log4j2</artifactId>
+						<version>1.1.0</version>
+				</dependency>
+				<dependency>
+						<groupId>org.apache.logging.log4j</groupId>
+						<artifactId>log4j-core</artifactId>
+						<version>2.8.2</version>
+				</dependency>
+				<dependency>
+						<groupId>org.apache.logging.log4j</groupId>
+						<artifactId>log4j-api</artifactId>
+						<version>2.8.2</version>
+				</dependency>
+				<dependency>
+						<groupId>com.fasterxml.jackson.dataformat</groupId>
+						<artifactId>jackson-dataformat-xml</artifactId>
+						<version>2.9.8</version>
+				</dependency>
+				<dependency>
+						<groupId>com.fasterxml.jackson.core</groupId>
+						<artifactId>jackson-core</artifactId>
+						<version>2.8.5</version>
+				</dependency>
+				<dependency>
+						<groupId>com.fasterxml.jackson.core</groupId>
+						<artifactId>jackson-databind</artifactId>
+						<version>2.8.11.3</version>
+				</dependency>
+				<dependency>
+						<groupId>com.fasterxml.jackson.core</groupId>
+						<artifactId>jackson-annotations</artifactId>
+						<version>2.8.5</version>
+				</dependency>
+				<dependency>
+						<groupId>com.google.code.gson</groupId>
+						<artifactId>gson</artifactId>
+						<version>2.8.6</version>
+				</dependency>
+				<dependency>
+						<groupId>com.amazonaws</groupId>
+						<artifactId>aws-java-sdk-dynamodb</artifactId>
+						<version>1.11.600</version>
+				</dependency>
+				<dependency>
+						<groupId>com.github.kevinsawicki</groupId>
+						<artifactId>http-request</artifactId>
+						<version>5.3</version>
+				</dependency>
+				<dependency>
+						<groupId>com.ebay</groupId>
+						<artifactId>ebaysdkcore</artifactId>
+						<version>1027</version>
+				</dependency>
+				<!-- ebay sdk calls -->
+				<dependency>
+						<groupId>com.ebay</groupId>
+						<artifactId>ebaycalls</artifactId>
+						<version>1027</version>
+				</dependency>
+				<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-lambda-java-events -->
+				<dependency>
+						<groupId>com.amazonaws</groupId>
+						<artifactId>aws-lambda-java-events</artifactId>
+						<version>2.2.6</version>
+				</dependency>
+
+				<dependency>
+						<groupId>org.junit.jupiter</groupId>
+						<artifactId>junit-jupiter-engine</artifactId>
+						<version>5.4.0</version>
+						<scope>test</scope>
+				</dependency>
+				<!-- https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher -->
+				<dependency>
+						<groupId>org.junit.platform</groupId>
+						<artifactId>junit-platform-launcher</artifactId>
+						<version>1.5.2</version>
+						<scope>test</scope>
+				</dependency>
+				<dependency>
+						<groupId>org.apache.commons</groupId>
+						<artifactId>commons-lang3</artifactId>
+						<version>3.5</version>
+				</dependency>
+		</dependencies>
+		<build>
+				<plugins>
+						<plugin>
+								<groupId>org.apache.maven.plugins</groupId>
+								<artifactId>maven-dependency-plugin</artifactId>
+								<executions>
+										<execution>
+												<id>copy-dependencies</id>
+												<phase>prepare-package</phase>
+												<goals>
+														<goal>copy-dependencies</goal>
+												</goals>
+												<configuration>
+														<outputDirectory>${project.build.directory}/classes/lib</outputDirectory>
+														<overWriteReleases>false</overWriteReleases>
+														<overWriteSnapshots>false</overWriteSnapshots>
+														<overWriteIfNewer>true</overWriteIfNewer>
+												</configuration>
+										</execution>
+								</executions>
+						</plugin>
+
+						<plugin>
+								<groupId>org.apache.maven.plugins</groupId>
+								<artifactId>maven-jar-plugin</artifactId>
+								<configuration>
+										<archive>
+												<manifest>
+														<addClasspath>true</addClasspath>
+														<classpathPrefix>lib</classpathPrefix>
+														<!-- <mainClass>test.org.Cliente</mainClass> -->
+												</manifest>
+												<manifestEntries>
+														<Class-Path>lib/</Class-Path>
+												</manifestEntries>
+										</archive>
+								</configuration>
+						</plugin>
+						<plugin>
+								<artifactId>maven-dependency-plugin</artifactId>
+								<executions>
+										<execution>
+												<phase>install</phase>
+												<goals>
+														<goal>copy-dependencies</goal>
+												</goals>
+												<configuration>
+														<outputDirectory>${project.build.directory}/lib</outputDirectory>
+												</configuration>
+										</execution>
+								</executions>
+						</plugin>
+				</plugins>
+		</build>
+
+
+</project>

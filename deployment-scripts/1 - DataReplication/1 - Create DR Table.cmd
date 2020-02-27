@@ -1,0 +1,1 @@
+aws dynamodb create-table --table-name eventbus-dataReplication --attribute-definitions AttributeName=tableName,AttributeType=S --key-schema AttributeName=tableName,KeyType=HASH --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1

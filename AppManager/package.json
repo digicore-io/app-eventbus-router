@@ -1,0 +1,35 @@
+{
+  "name": "api-location",
+  "version": "1.0.0",
+  "description": "Locations services API",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/digicore-io/AppEventBus.git"
+  },
+  "author": "Nicola Peduzzi <thenikso@gmail.com> (http://nikso.net)",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^12.12.26",
+    "serverless": "^1.23.0",
+    "serverless-add-api-key": "^4.0.2",
+    "serverless-aws-documentation": "^1.1.0",
+    "serverless-domain-manager": "^3.2.2",
+    "serverless-offline": "^4.10.6",
+    "serverless-webpack": "^5.3.0",
+    "ts-loader": "^2.3.7",
+    "typescript": "^2.5.3",
+    "webpack": "^3.8.1",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "dependencies": {
+    "@digicore-io/digicore-node-common-module": "1.0.10",
+    "async": "^3.0.0",
+    "aws-sdk": "^2.615.0",
+    "serverless-api-compression": "^1.0.1",
+    "uuid": "^3.3.2"
+  }
+}

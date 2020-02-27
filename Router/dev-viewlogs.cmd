@@ -1,0 +1,1 @@
+awslogs get /aws/lambda/eb-Router-dev ALL --watch
