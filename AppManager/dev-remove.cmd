@@ -1,1 +1,0 @@
-sls remove --stage dev --aws-profile DigiCoreDev

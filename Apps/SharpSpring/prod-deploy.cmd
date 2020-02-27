@@ -1,1 +1,0 @@
-serverless deploy --stage prod --aws-profile DigiCoreProd

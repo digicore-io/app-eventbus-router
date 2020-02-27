@@ -1,1 +1,0 @@
-serverless deploy --stage dev --aws-profile DigiCoreDev

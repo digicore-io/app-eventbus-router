@@ -1,1 +1,0 @@
-sls offline --noAuth --port 3001 -r us-east-1
